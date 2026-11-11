@@ -20,7 +20,7 @@ class Conversation:
 
         generation_config = {
             "max_output_tokens": 65536,
-            "thinking_level": "low",
+            "thinking_level": "minimal",
         }
 
         try:
