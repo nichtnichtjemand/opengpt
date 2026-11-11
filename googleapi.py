@@ -9,7 +9,7 @@ api_key = os.getenv("GOOGLE_API_KEY")
 
 client = genai.Client(
     api_key=api_key,
-    http_options={"timeout": 20000}
+    http_options={"timeout": 30000}
 )
 
 class Conversation: 
