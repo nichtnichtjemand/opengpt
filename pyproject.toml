@@ -7,7 +7,9 @@ authors = [
     { name = "Alexander Zollner", email = "alex.zollner2011@gmail.com" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "google-genai>=3.1.0",
+]
 
 [project.scripts]
 opengpt = "opengpt:main"
