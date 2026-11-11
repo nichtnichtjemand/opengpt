@@ -1,8 +1,11 @@
+import asyncio
+
 import terminal
 
-def main():
-    terminal.main()
+
+async def main():
+    await terminal.main()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
