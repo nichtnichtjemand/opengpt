@@ -1,35 +1,59 @@
 import asyncio
+import logging
 
 import googleapi
 import mcp_manager
 
-running = True
-
 
 def ui_tool_status(tool_name: str, args: dict):
-    print(f"⚙️ [MCP-Tool] Execute '{tool_name}' (Parameter: {args})...")
+    print(f"[MCP-Tool] Execute '{tool_name}' (Parameter: {args})...")
 
 
 async def main():
-    print("Connect to MCP Server...")
+
+    logger = logging.getLogger("mein_chat_bot")
+    logger.setLevel(logging.DEBUG)
+
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter(
+            "%(asctime)s [%(levelname)s] %(message)s", datefmt="%H:%M:%S"
+        )
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+
+    logger.debug("Connect to MCP Server...")
     mcp = mcp_manager.MCPManager("resources/mcp/main_server.py")
     await mcp.connect()
+    running = True
 
     try:
-        print("Started OpenGPT! Type your questions here.")
+        logger.info("Started OpenGPT")
         conversation = googleapi.Conversation(mcp=mcp)
 
         while running:
             user_input = await asyncio.to_thread(input, "\nYou: ")
 
-            if user_input.strip().lower() in ["exit", "quit"]:
-                break
+            if user_input.startswith("!"):
+                logger.debug("Command detected")
 
-            print("Running...")
-            reply = await conversation.send_message(
-                message=user_input, on_tool_call=ui_tool_status
-            )
-            print(f"\nOpenGPT:\n{reply}")
+                command = user_input[1:].split(" ")
+                start_command = command[0]
+                arguments = command[1:]
+
+                match start_command:
+                    case "exit":
+                        running = False
+                    case "quit":
+                        running = False
+                    case "model":
+                        conversation.model = arguments[0]
+
+            else:
+                reply = await conversation.send_message(
+                    message=user_input, on_tool_call=ui_tool_status
+                )
+                logger.info(f"\nOpenGPT:\n{reply}")
 
     finally:
         await mcp.close()
