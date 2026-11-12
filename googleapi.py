@@ -12,10 +12,17 @@ client = genai.Client(api_key=api_key, http_options={"timeout": 30000})
 
 
 class Conversation:
-    def __init__(self, mcp: MCPManager):
+    def __init__(
+        self,
+        mcp: MCPManager,
+        provider: str = "google",
+        model: str = "gemini-3.5-flash-lite",
+    ):
         self.conversation_id = None
         self.system_prompt = self.get_system_prompt()
         self.mcp = mcp
+        self.model = model
+        self.provider = provider
 
     async def send_message(
         self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
@@ -31,7 +38,7 @@ class Conversation:
         try:
             while True:
                 kwargs = {
-                    "model": "gemini-3.5-flash-lite",
+                    "model": self.model,
                     "input": current_input,
                     "generation_config": generation_config,
                     "system_instruction": self.system_prompt,
@@ -43,7 +50,6 @@ class Conversation:
                 interaction = await client.aio.interactions.create(**kwargs)
                 self.conversation_id = interaction.id
 
-                # Geändert: interaction.steps statt interaction.outputs
                 function_calls = [
                     step for step in interaction.steps if step.type == "function_call"
                 ]
