@@ -114,7 +114,7 @@ class Conversation:
                     "model": self.model,
                     "messages": self.messages,
                     "temperature": 1.0,
-                    "max_completion_tokens": 2048,
+                    "max_completion_tokens": 4096,
                     "top_p": 1.0,
                     "stream": False,
                 }
