@@ -1,6 +1,7 @@
 import requests
 from mcp.server.mcpserver import MCPServer
 from tools.memory import memory
+from tools.websearch import websearch
 
 mcp = MCPServer("OpenGPT-Tools")
 
@@ -57,6 +58,13 @@ def reset_memory() -> str:
 def remove_block(block: str) -> str:
     """Deletes a memory block. Use with caution!"""
     return memory.delete_block(block)
+
+
+@mcp.tool()
+def search_online(query: str, timerange: str) -> dict:
+    """Returns the Websearch Results to a specific query with an AI summary. Always write your query in english.
+    The timezone means how old results can be. You can use one of them: "None", "Day", "Week", "Month", "Year"."""
+    return websearch.get_search(query, timerange)
 
 
 if __name__ == "__main__":
