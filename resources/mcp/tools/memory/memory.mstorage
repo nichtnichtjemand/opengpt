@@ -1,0 +1,10 @@
+version:0.0.1
+layout:personal,hobbies
+START:personal
+date:2026-09-14
+text:The user has the age 15. He also is this and that.
+END:personal
+START:hobbies
+date:2026-09-13
+text:He likes programming and much more.
+END:hobbies
