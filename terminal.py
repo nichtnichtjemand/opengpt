@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-import googleapi
+import aiapi
 import mcp_manager
 
 
@@ -29,7 +29,7 @@ async def main():
 
     try:
         logger.info("Started OpenGPT")
-        conversation = googleapi.Conversation(
+        conversation = aiapi.Conversation(
             mcp=mcp, provider="groq", model="openai/gpt-oss-120b"
         )
 
