@@ -41,6 +41,7 @@ def reset_file():
 
     with open(filepath, "w", encoding="utf-8") as file:
         file.write(f"version:{VERSION}\nlayout:\n")
+    return "Reset successful"
 
 
 def get_blocks():
@@ -105,6 +106,7 @@ def edit_block(block, text):
 
     with open(filepath, "w", encoding="utf-8") as file:
         file.write("\n".join(content))
+    return "Edited block successful"
 
 
 def add_block(block, text):
@@ -126,6 +128,7 @@ def add_block(block, text):
 
     with open(filepath, "w", encoding="utf-8") as file:
         file.write(content)
+    return "Added block successful"
 
 
 def delete_block(block):
@@ -154,6 +157,4 @@ def delete_block(block):
     filepath = Path(__file__).resolve().parent / "memory.mstorage"
     with open(filepath, "w", encoding="utf-8") as file:
         file.write("\n".join(new_content))
-
-
-delete_block("personal")
+    return "Deleted successful"

@@ -1,7 +1,7 @@
 version:1.0
-layout:hobbies
+layout:interests
 
-START:hobbies
+START:interests
 date:2026-11-14
-text:zweiter test
-END:hobbies
+text:Ich fahre gerne Autos.
+END:interests
