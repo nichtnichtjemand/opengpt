@@ -29,7 +29,9 @@ async def main():
 
     try:
         logger.info("Started OpenGPT")
-        conversation = googleapi.Conversation(mcp=mcp)
+        conversation = googleapi.Conversation(
+            mcp=mcp, provider="groq", model="openai/gpt-oss-120b"
+        )
 
         while running:
             user_input = await asyncio.to_thread(input, "\nYou: ")

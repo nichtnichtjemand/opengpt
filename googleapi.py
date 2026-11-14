@@ -1,14 +1,23 @@
+import json
 import os
 from collections.abc import Callable
 
 from dotenv import load_dotenv
 from google import genai
+from groq import AsyncGroq
 
 from mcp_manager import MCPManager
 
 load_dotenv()
-api_key = os.getenv("GOOGLE_API_KEY")
-client = genai.Client(api_key=api_key, http_options={"timeout": 30000})
+
+google_client = genai.Client(
+    api_key=os.getenv("GOOGLE_API_KEY"),
+    http_options={"timeout": 30000},
+)
+groq_client = AsyncGroq(
+    api_key=os.getenv("GROQ_API_KEY"),
+    timeout=30.0,
+)
 
 
 class Conversation:
@@ -18,21 +27,32 @@ class Conversation:
         provider: str = "google",
         model: str = "gemini-3.5-flash-lite",
     ):
-        self.conversation_id = None
         self.system_prompt = self.get_system_prompt()
         self.mcp = mcp
+        self.provider = provider.lower()
         self.model = model
-        self.provider = provider
+
+        self.conversation_id = None
+
+        self.messages: list[dict] = [{"role": "system", "content": self.system_prompt}]
 
     async def send_message(
         self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
     ) -> str | None:
+        if self.provider == "google":
+            return await self._send_google(message, on_tool_call)
+        elif self.provider == "groq":
+            return await self._send_groq(message, on_tool_call)
+        else:
+            raise ValueError(f"Unbekannter Provider: {self.provider}")
 
+    async def _send_google(
+        self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
+    ) -> str | None:
         generation_config = {
             "max_output_tokens": 65536,
             "thinking_level": "minimal",
         }
-
         current_input = message
 
         try:
@@ -47,7 +67,7 @@ class Conversation:
                 if self.conversation_id is not None:
                     kwargs["previous_interaction_id"] = self.conversation_id
 
-                interaction = await client.aio.interactions.create(**kwargs)
+                interaction = await google_client.aio.interactions.create(**kwargs)
                 self.conversation_id = interaction.id
 
                 function_calls = [
@@ -78,7 +98,69 @@ class Conversation:
                 current_input = tool_results
 
         except Exception as e:  # noqa: BLE001
-            print("Error in interactions.create:", type(e).__name__, e)
+            print("Error in Google interactions.create:", type(e).__name__, e)
+            return None
+
+    async def _send_groq(
+        self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
+    ) -> str | None:
+        self.messages.append({"role": "user", "content": message})
+
+        groq_tools = getattr(self.mcp, "openai_tools", None)
+
+        try:
+            while True:
+                kwargs = {
+                    "model": self.model,
+                    "messages": self.messages,
+                    "temperature": 1.0,
+                    "max_completion_tokens": 2048,
+                    "top_p": 1.0,
+                    "stream": False,
+                }
+
+                if "gpt-oss" in self.model or "qwen3" in self.model:
+                    kwargs["reasoning_effort"] = "medium"
+
+                if groq_tools:
+                    kwargs["tools"] = groq_tools
+
+                completion = await groq_client.chat.completions.create(**kwargs)
+                response_message = completion.choices[0].message
+
+                assistant_msg: dict = {
+                    "role": "assistant",
+                    "content": response_message.content or "",
+                }
+                if response_message.tool_calls:
+                    assistant_msg["tool_calls"] = [
+                        tc.model_dump() for tc in response_message.tool_calls
+                    ]
+                self.messages.append(assistant_msg)
+
+                if not response_message.tool_calls:
+                    return response_message.content or ""
+
+                for tool_call in response_message.tool_calls:
+                    func_name = tool_call.function.name
+                    func_args = json.loads(tool_call.function.arguments or "{}")
+
+                    if on_tool_call:
+                        on_tool_call(func_name, func_args)
+
+                    result_text = await self.mcp.execute_tool(func_name, func_args)
+
+                    self.messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": func_name,
+                            "content": str(result_text),
+                        }
+                    )
+
+        except Exception as e:  # noqa: BLE001
+            print("Error in Groq chat.completions.create:", type(e).__name__, e)
             return None
 
     def get_system_prompt(self):
