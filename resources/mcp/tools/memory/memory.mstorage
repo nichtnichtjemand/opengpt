@@ -1,7 +1,12 @@
 version:1.0
-layout:interests
+layout:age,location
 
-START:interests
+START:age
 date:2026-11-14
-text:Ich fahre gerne Autos.
-END:interests
+text:The user is 20 years old.
+END:age
+
+START:location
+date:2026-11-14
+text:The user lives in Germany.
+END:location
