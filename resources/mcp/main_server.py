@@ -5,14 +5,21 @@ mcp = MCPServer("OpenGPT-Tools")
 
 @mcp.tool()
 def secret() -> str:
-    """Returns a secret, use for getting the secret"""
-    return "Banana"
+    """Returns the secret word"""
+    return "Apple"
 
 
 @mcp.tool()
 def system_status() -> str:
-    """Returns current system status."""
-    return "Everything works with code 98."
+    """Returns current MCP connection status"""
+    return "Everything seems to work here!"
+
+
+@mcp.tool()
+def get_weather(city: str) -> str:
+    """Returns the current weather for a given city"""
+
+    return f"The current weather in {city} is sunny with a temperature of 25°C."
 
 
 if __name__ == "__main__":

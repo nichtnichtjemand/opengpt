@@ -16,6 +16,7 @@ class MCPManager:
         self.exit_stack = AsyncExitStack()
         self.session: ClientSession | None = None
         self.gemini_tools: list[dict] = []
+        self.openai_tools: list[dict] = []  # <-- NEU
 
     async def connect(self):
         read, write = await self.exit_stack.enter_async_context(
@@ -27,12 +28,25 @@ class MCPManager:
         await self.session.initialize()
 
         mcp_tools = await self.session.list_tools()
+
         self.gemini_tools = [
             {
                 "type": "function",
                 "name": tool.name,
                 "description": tool.description or "",
                 "parameters": tool.input_schema,
+            }
+            for tool in mcp_tools.tools
+        ]
+
+        self.openai_tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": tool.name,
+                    "description": tool.description or "",
+                    "parameters": tool.input_schema,
+                },
             }
             for tool in mcp_tools.tools
         ]
