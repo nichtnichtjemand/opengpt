@@ -1,6 +1,7 @@
 import os
 import sys
 from contextlib import AsyncExitStack
+from pathlib import Path
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -8,10 +9,17 @@ from mcp.client.stdio import stdio_client
 
 class MCPManager:
     def __init__(self, server_script: str):
+        script_path = Path(server_script).resolve()
+        mcp_dir = str(script_path.parent)
+        env = {
+            **os.environ,
+            "PYTHONUNBUFFERED": "1",
+            "PYTHONPATH": mcp_dir + os.pathsep + os.environ.get("PYTHONPATH", ""),
+        }
         self.server_params = StdioServerParameters(
             command=sys.executable,
-            args=["-u", server_script],
-            env={**os.environ, "PYTHONUNBUFFERED": "1"},
+            args=["-u", str(script_path)],
+            env=env,
         )
         self.exit_stack = AsyncExitStack()
         self.session: ClientSession | None = None

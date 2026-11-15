@@ -18,6 +18,7 @@ import threading
 import time
 import webbrowser
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -30,12 +31,13 @@ import mcp_manager
 # ============================================================
 # CONFIGURATION
 # ============================================================
+_BASE_DIR = Path(__file__).resolve().parent
 HOST = "127.0.0.1"
 PORT = 8000
 URL = f"http://{HOST}:{PORT}"
 MODEL = "openai/gpt-oss-120b"
 PROVIDER = "groq"
-MCP_SERVER = "resources/mcp/main_server.py"
+MCP_SERVER = str(_BASE_DIR / "resources" / "mcp" / "main_server.py")
 # ============================================================
 # LOGGING
 # ============================================================

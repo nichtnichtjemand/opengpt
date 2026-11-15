@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from pathlib import Path
 
 import aiapi
 import mcp_manager
@@ -23,7 +24,8 @@ async def main():
         logger.addHandler(handler)
 
     logger.debug("Connect to MCP Server...")
-    mcp = mcp_manager.MCPManager("resources/mcp/main_server.py")
+    _base = Path(__file__).resolve().parent
+    mcp = mcp_manager.MCPManager(str(_base / "resources" / "mcp" / "main_server.py"))
     await mcp.connect()
     running = True
 
