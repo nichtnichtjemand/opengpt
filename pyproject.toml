@@ -18,6 +18,7 @@ dependencies = [
     "pillow>=13.0.0",
     "pypdf>=7.1.0",
     "python-dotenv>=1.2.4",
+    "restrictedpython>=9.0",
     "tavily-python>=0.8.5",
     "uvicorn>=0.54.0",
 ]
