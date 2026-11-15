@@ -682,7 +682,6 @@ async def health():
 # ============================================================
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
-    global conversation
     message = request.message.strip()
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
