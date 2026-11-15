@@ -1,5 +1,6 @@
 import requests
 from mcp.server.mcpserver import MCPServer
+from tools.filemanagement import filemanagement
 from tools.memory import memory
 from tools.pythoncode import pythoncode
 from tools.skills import skillmanager
@@ -87,6 +88,24 @@ def execute_python(code: str) -> dict:
     You are not allowed to run code that may harm anybody in any way, not even the user even if he wishes so.
     Do not use Markdown Formatting here, only the code as plain text. Always read the Python Skill before using this Tool!"""
     return pythoncode.run_code(code)
+
+
+@mcp.tool()
+def get_files() -> str:
+    """Returns file names in your working directory. Here you can put your files in to do things for the user. Do not put dangerous code here."""
+    return str(filemanagement.get_files())
+
+
+@mcp.tool()
+def get_file_content(path: str) -> str:
+    """Returns file content of a file in your working directory. Here you can put your files in to do things for the user. Do not put dangerous code here."""
+    return filemanagement.get_file_content(path)
+
+
+@mcp.tool()
+def write_file_content(path: str, content: str) -> str:
+    """Writes file content of a file in your working directory. Here you can put your files in to do things for the user. Do not put dangerous code here."""
+    return filemanagement.write_file_content(path, content)
 
 
 if __name__ == "__main__":

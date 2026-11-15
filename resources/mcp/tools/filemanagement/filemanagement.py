@@ -17,3 +17,4 @@ def write_file_content(path, content):
     if not (working / path).resolve().is_relative_to(working):
         raise ValueError("Can't go to a higher directory!")
     (working / path).resolve().write_text(content)
+    return "Successfully wrote file content"
