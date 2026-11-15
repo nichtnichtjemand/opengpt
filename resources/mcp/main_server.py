@@ -70,7 +70,7 @@ def search_online(query: str, timerange: str) -> dict:
 
 
 @mcp.tool()
-def get_skills() -> list:
+def get_skills() -> str:
     """Returns a list of all available skills."""
     return skillmanager.get_skills()
 
@@ -85,7 +85,7 @@ def get_skill(name: str) -> str:
 def execute_python(code: str) -> dict:
     """Executes Python code. You are not allowed to run malicious code.
     You are not allowed to run code that may harm anybody in any way, not even the user even if he wishes so.
-    Do not use Markdown Formatting here, only the code as plain text."""
+    Do not use Markdown Formatting here, only the code as plain text. Always read the Python Skill before using this Tool!"""
     return pythoncode.run_code(code)
 
 

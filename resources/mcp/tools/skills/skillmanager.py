@@ -9,12 +9,11 @@ def get_skills():
 
     for file in path.glob("*/SKILL.md"):
         if file.is_file():
-            print(f"Found: {file}")
             content = file.read_text("utf-8").splitlines()
             name = content[1][6:]
             description = content[2][13:]
             skills.append([name, description])
-    return skills
+    return str(skills)
 
 
 def get_skill(name):
