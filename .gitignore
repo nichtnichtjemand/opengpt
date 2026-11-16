@@ -9,3 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .env
+
+# Resources
+resources/working/**
+resources/mcp/tools/memory/memory.mstorage
