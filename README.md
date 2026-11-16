@@ -28,5 +28,9 @@ uv run pyinstaller --clean --noconfirm opengpt.spec
 The `dist/opengpt` folder must stay together because it contains the bundled
 `resources` files used by the MCP server and the application.
 
+## Why I made this
+For fun! I really like AI chatbots like ChatGPT, but I dont like these bad free limits so I made it better.
+
+
 ## Contributing
 Feel free to create a PR if you have things to change! I'm happy for each contribution.
