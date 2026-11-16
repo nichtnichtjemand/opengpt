@@ -4,15 +4,16 @@ import logging
 import aiapi
 import mcp_manager
 
+logging.basicConfig(level=logging.INFO)
+
+logger = logging.getLogger("opengpt")
+
 
 def ui_tool_status(tool_name: str, args: dict):
-    print(f"[MCP-Tool] Execute '{tool_name}' (Parameter: {args})...")
+    logger.debug(f"[MCP-Tool] Execute '{tool_name}' (Parameter: {args})...")
 
 
 async def main():
-
-    logger = logging.getLogger("mein_chat_bot")
-    logger.setLevel(logging.DEBUG)
 
     if not logger.handlers:
         handler = logging.StreamHandler()
