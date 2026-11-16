@@ -30,6 +30,7 @@ The `dist/opengpt` folder must stay together because it contains the bundled
 
 ## Why I made this
 For fun! I really like AI chatbots like ChatGPT, but I dont like these bad free limits so I made it better.
+<img width="1263" height="499" alt="Bildschirmfoto vom 2026-11-15 20-13-36" src="https://github.com/user-attachments/assets/4265f973-d2bd-4aca-9a80-0252c7ef99be" />
 
 
 ## Contributing
