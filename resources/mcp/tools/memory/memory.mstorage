@@ -7,6 +7,6 @@ text:The user is 15 years old.
 END:age
 
 START:location
-date:2026-11-14
-text:The user lives in Germany.
+date:2026-11-15
+text:The user lives in Nuremberg, Germany.
 END:location

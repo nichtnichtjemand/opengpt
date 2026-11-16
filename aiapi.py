@@ -1,6 +1,8 @@
 import json
 import os
+import sys
 from collections.abc import Callable
+from pathlib import Path
 
 from dotenv import load_dotenv
 from google import genai
@@ -164,6 +166,8 @@ class Conversation:
             return None
 
     def get_system_prompt(self):
-        with open("resources/prompts/systemprompt1.txt", "r", encoding="utf-8") as file:
+        bundle_root = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+        prompt_path = bundle_root / "resources" / "prompts" / "systemprompt1.txt"
+        with prompt_path.open("r", encoding="utf-8") as file:
             content = file.read()
         return content

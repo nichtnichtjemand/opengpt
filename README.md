@@ -10,7 +10,7 @@ A custom Chatbot interface, made in Python!
 - Skills: You can put skills in Anthropic's format in resources/skills and it can use it
 ## How to run it
 ```bash
-# 1. Install uv (Linux and macOS here, ask AI for Windows)
+# 1. Install uv (Linux here, ask AI for Windows or macOS)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 # 2. Create venv
 uv sync
@@ -18,6 +18,15 @@ uv sync
 # 4. Run it
 uv run main.py
 ```
+
+## Build
+```bash
+uv run pyinstaller --clean --noconfirm opengpt.spec
+./dist/opengpt/opengpt
+```
+
+The `dist/opengpt` folder must stay together because it contains the bundled
+`resources` files used by the MCP server and the application.
 
 ## Contributing
 Feel free to create a PR if you have things to change! I'm happy for each contribution.

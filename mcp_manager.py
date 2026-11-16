@@ -8,9 +8,14 @@ from mcp.client.stdio import stdio_client
 
 class MCPManager:
     def __init__(self, server_script: str):
+        server_args = (
+            ["--mcp-server"]
+            if getattr(sys, "frozen", False)
+            else ["-u", server_script]
+        )
         self.server_params = StdioServerParameters(
             command=sys.executable,
-            args=["-u", server_script],
+            args=server_args,
             env={**os.environ, "PYTHONUNBUFFERED": "1"},
         )
         self.exit_stack = AsyncExitStack()
