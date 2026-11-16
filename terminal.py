@@ -1,12 +1,17 @@
 import asyncio
 import logging
 
+from rich.console import Console
+from rich.markdown import Markdown
+
 import aiapi
 import mcp_manager
 
 logging.basicConfig(level=logging.INFO)
-
+logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger("opengpt")
+
+console = Console()
 
 
 def ui_tool_status(tool_name: str, args: dict):
@@ -56,7 +61,7 @@ async def main():
                 reply = await conversation.send_message(
                     message=user_input, on_tool_call=ui_tool_status
                 )
-                logger.info(f"\nOpenGPT:\n{reply}")
+                console.print(Markdown(reply))
 
     finally:
         await mcp.close()
