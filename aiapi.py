@@ -1,7 +1,9 @@
 import json
 import os
+import platform
 import sys
 from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -29,10 +31,11 @@ class Conversation:
         provider: str = "google",
         model: str = "gemini-3.5-flash-lite",
     ):
-        self.system_prompt = self.get_system_prompt()
         self.mcp = mcp
         self.provider = provider.lower()
         self.model = model
+
+        self.system_prompt = self.get_system_prompt()
 
         self.conversation_id = None
 
@@ -170,4 +173,13 @@ class Conversation:
         prompt_path = bundle_root / "resources" / "prompts" / "systemprompt1.txt"
         with prompt_path.open("r", encoding="utf-8") as file:
             content = file.read()
-        return content
+
+        return self.format_system_prompt(content)
+
+    def format_system_prompt(self, prompt: str):
+        prompt = (
+            prompt.replace("{SYSTEM:MODEL}", self.model)
+            .replace("{SYSTEM:TIME}", datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
+            .replace("{SYSTEM:PLATFORM}", str(platform.uname()))
+        )
+        return prompt
