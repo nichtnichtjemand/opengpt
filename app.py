@@ -33,8 +33,8 @@ async def main(page: ft.Page):
 
     status_text = ft.Text(size=12, color="#8E8E93", italic=True)
 
-    def create_message_bubble(text: str, type: bool):
-        if type:
+    def create_message_bubble(text, type):
+        if type == "user":
             return ft.Row(
                 alignment=ft.MainAxisAlignment.END,
                 controls=[
@@ -47,7 +47,7 @@ async def main(page: ft.Page):
                     )
                 ],
             )
-        else:
+        elif type == "ai":
             return ft.Row(
                 alignment=ft.MainAxisAlignment.START,
                 vertical_alignment=ft.CrossAxisAlignment.START,
@@ -63,10 +63,29 @@ async def main(page: ft.Page):
                     ),
                 ],
             )
+        elif type == "tool":
+            return ft.Row(
+                alignment=ft.MainAxisAlignment.START,
+                vertical_alignment=ft.CrossAxisAlignment.START,
+                controls=[
+                    ft.Container(
+                        expand=True,
+                        padding=ft.Padding.only(top=4),
+                        content=ft.Markdown(
+                            text,
+                            selectable=True,
+                            extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
+                            md_style_sheet=ft.MarkdownStyleSheet(
+                                p_text_style=ft.TextStyle(color="#454545"),
+                            ),
+                        ),
+                    ),
+                ],
+            )
 
     def ui_tool_status(tool_name: str, args: dict):
         chat_history.controls.append(
-            create_message_bubble(f"Uses tool: {tool_name} with {args}", type=False)
+            create_message_bubble(f"Uses tool {tool_name} with {args}", type="tool")
         )
         page.update()
 
@@ -79,14 +98,14 @@ async def main(page: ft.Page):
         input_text.disabled = True
         send_button.disabled = True
         status_text.value = "OpenGPT is thinking..."
-        chat_history.controls.append(create_message_bubble(message, type=True))
+        chat_history.controls.append(create_message_bubble(message, type="user"))
         page.update()
 
         try:
             reply = await conversation.send_message(
                 message=message, on_tool_call=ui_tool_status
             )
-            chat_history.controls.append(create_message_bubble(reply, type=False))
+            chat_history.controls.append(create_message_bubble(reply, type="ai"))
         except Exception as err:  # noqa: BLE001
             chat_history.controls.append(
                 ft.Text(f"Fehler: {err}", color=ft.Colors.RED_400)
