@@ -2,6 +2,7 @@ import requests
 from mcp.server.mcpserver import MCPServer
 from tools.filemanagement import filemanagement
 from tools.memory import memory
+from tools.memory.memory import MStorageParseError
 from tools.pythoncode import pythoncode
 from tools.skills import skillmanager
 from tools.websearch import websearch
@@ -36,21 +37,30 @@ def get_weather(city: str) -> str:
 @mcp.tool()
 def get_memory() -> dict:
     """Returns all information about the user you and them saved"""
-    return memory.get_blocks()
+    try:
+        return memory.get_blocks()
+    except MStorageParseError as e:
+        return f"Error: {e}"
 
 
 @mcp.tool()
-def add_memory(block: str, text: str) -> str:
+def add_memory_block(block: str, text: str) -> str:
     """Add a new memory block. Speak about the user in third person. First check for the existing memory so the block doesn't exist yet with get_memory(). Do not use multiple lines in the text field.
     Example: add_memory("devices", "The user has a Samsung Galaxy A56. xyz")
     """
-    return memory.add_block(block, text)
+    try:
+        return memory.add_block(block, text)
+    except MStorageParseError as e:
+        return f"Error: {e}"
 
 
 @mcp.tool()
 def edit_memory(block: str, text: str) -> str:
     """Edits an existing memory block. Speak about the user in third person. block = name of the block, text = new text field for this block."""
-    return memory.edit_block(block, text)
+    try:
+        return memory.edit_block(block, text)
+    except MStorageParseError as e:
+        return f"Error: {e}"
 
 
 @mcp.tool()
@@ -60,9 +70,12 @@ def reset_memory() -> str:
 
 
 @mcp.tool()
-def remove_block(block: str) -> str:
+def remove_memory_block(block: str) -> str:
     """Deletes a memory block. Use with caution!"""
-    return memory.delete_block(block)
+    try:
+        return memory.delete_block(block)
+    except MStorageParseError as e:
+        return f"Error: {e}"
 
 
 @mcp.tool()
