@@ -15,7 +15,7 @@ def get_skills():
                 description = content[2][13:]
                 skills.append([name, description])
         return str(skills)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return f"Unknown internal error: {e}"
 
 
