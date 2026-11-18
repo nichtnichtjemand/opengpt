@@ -13,7 +13,7 @@ async def main(page: ft.Page):
     page.fonts = {
         "Roboto": "roboto.ttf",
         "Emoji": "NotoColorEmoji.ttf",
-        "monospace": "roboto.ttf",
+        "monospace": "robotomono.ttf",
     }
 
     default_text_style = ft.TextStyle(
@@ -155,7 +155,7 @@ async def main(page: ft.Page):
         except Exception as err:  # noqa: BLE001
             chat_history.controls.append(
                 ft.Text(
-                    f"Fehler: {err}",
+                    f"Error: {err}",
                     color=ft.Colors.RED_400,
                     style=default_text_style,
                 )
