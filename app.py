@@ -12,11 +12,31 @@ async def main(page: ft.Page):
 
     page.fonts = {
         "Roboto": "roboto.ttf",
+        "Emoji": "NotoColorEmoji.ttf",
     }
 
-    page.theme = ft.Theme(
-        color_scheme_seed=ft.Colors.BLACK, use_material3=True, font_family="Roboto"
+    default_text_style = ft.TextStyle(
+        color="#FFFFFF",
+        font_family="Roboto",
+        font_family_fallback=["Emoji"],
     )
+
+    custom_theme = ft.Theme(
+        color_scheme_seed=ft.Colors.BLACK,
+        use_material3=True,
+        font_family="Roboto",
+        text_theme=ft.TextTheme(
+            body_medium=default_text_style,
+            body_large=default_text_style,
+            body_small=default_text_style,
+            title_medium=default_text_style,
+            title_large=default_text_style,
+            label_large=default_text_style,
+        ),
+    )
+
+    page.theme = custom_theme
+    page.dark_theme = custom_theme
 
     mcp = mcp_manager.MCPManager("resources/mcp/main_server.py")
     await mcp.connect()
@@ -33,13 +53,38 @@ async def main(page: ft.Page):
 
     status_text = ft.Text(size=12, color="#8E8E93", italic=True)
 
+    ai_markdown_style = ft.MarkdownStyleSheet(
+        p_text_style=default_text_style,
+        h1_text_style=default_text_style,
+        h2_text_style=default_text_style,
+        h3_text_style=default_text_style,
+        h4_text_style=default_text_style,
+        h5_text_style=default_text_style,
+        h6_text_style=default_text_style,
+        list_bullet_text_style=default_text_style,
+        blockquote_text_style=default_text_style,
+    )
+
+    tool_markdown_style = ft.MarkdownStyleSheet(
+        p_text_style=ft.TextStyle(
+            color="#454545",
+            font_family="Roboto",
+            font_family_fallback=["Emoji"],
+        ),
+    )
+
     def create_message_bubble(text, type):
         if type == "user":
             return ft.Row(
                 alignment=ft.MainAxisAlignment.END,
                 controls=[
                     ft.Container(
-                        content=ft.Text(text, size=15, color="#FFFFFF"),
+                        content=ft.Text(
+                            text,
+                            size=15,
+                            color="#FFFFFF",
+                            style=default_text_style,
+                        ),
                         bgcolor="#27272A",
                         padding=ft.Padding.symmetric(horizontal=18, vertical=12),
                         border_radius=ft.BorderRadius.all(20),
@@ -59,6 +104,7 @@ async def main(page: ft.Page):
                             text,
                             selectable=True,
                             extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
+                            md_style_sheet=ai_markdown_style,
                         ),
                     ),
                 ],
@@ -75,9 +121,7 @@ async def main(page: ft.Page):
                             text,
                             selectable=True,
                             extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
-                            md_style_sheet=ft.MarkdownStyleSheet(
-                                p_text_style=ft.TextStyle(color="#454545"),
-                            ),
+                            md_style_sheet=tool_markdown_style,
                         ),
                     ),
                 ],
@@ -108,7 +152,11 @@ async def main(page: ft.Page):
             chat_history.controls.append(create_message_bubble(reply, type="ai"))
         except Exception as err:  # noqa: BLE001
             chat_history.controls.append(
-                ft.Text(f"Fehler: {err}", color=ft.Colors.RED_400)
+                ft.Text(
+                    f"Fehler: {err}",
+                    color=ft.Colors.RED_400,
+                    style=default_text_style,
+                )
             )
         finally:
             status_text.value = ""
@@ -119,7 +167,12 @@ async def main(page: ft.Page):
 
     input_text = ft.TextField(
         hint_text="Message to OpenGPT...",
-        hint_style=ft.TextStyle(color="#71717A"),
+        hint_style=ft.TextStyle(
+            color="#71717A",
+            font_family="Roboto",
+            font_family_fallback=["Emoji"],
+        ),
+        text_style=default_text_style,
         border=ft.InputBorder.NONE,
         filled=False,
         expand=True,

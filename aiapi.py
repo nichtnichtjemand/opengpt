@@ -12,6 +12,7 @@ from google import genai
 from groq import AsyncGroq
 
 from mcp_manager import MCPManager
+from resources.mcp.tools.skills.skillmanager import get_skills
 
 logger = logging.getLogger("opengpt." + __name__)
 
@@ -193,5 +194,6 @@ class Conversation:
             prompt.replace("{SYSTEM:MODEL}", self.model)
             .replace("{SYSTEM:TIME}", datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
             .replace("{SYSTEM:PLATFORM}", str(platform.uname()))
+            + f"\n\nAvailable Skills: {get_skills()}"
         )
         return prompt

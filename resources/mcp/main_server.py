@@ -81,15 +81,9 @@ def remove_memory_block(block: str) -> str:
 @mcp.tool()
 def search_online(query: str, timerange: str) -> dict:
     """Returns the Websearch Results to a specific query with an AI summary. Always write your query in english.
-    The timezone means how old results can be. You can use one of them: "None", "Day", "Week", "Month", "Year"."""
+    The timezone parameter for this tool means how old results can be. You can use one of them: "None", "Day", "Week", "Month", "Year"."""
 
     return websearch.get_search(query, timerange)
-
-
-@mcp.tool()
-def get_skills() -> str:
-    """Returns a list of all available skills."""
-    return skillmanager.get_skills()
 
 
 @mcp.tool()
