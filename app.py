@@ -13,6 +13,7 @@ async def main(page: ft.Page):
     page.fonts = {
         "Roboto": "roboto.ttf",
         "Emoji": "NotoColorEmoji.ttf",
+        "monospace": "roboto.ttf",
     }
 
     default_text_style = ft.TextStyle(
@@ -63,6 +64,7 @@ async def main(page: ft.Page):
         h6_text_style=default_text_style,
         list_bullet_text_style=default_text_style,
         blockquote_text_style=default_text_style,
+        code_text_style=default_text_style,
     )
 
     tool_markdown_style = ft.MarkdownStyleSheet(
@@ -226,4 +228,5 @@ async def main(page: ft.Page):
     )
 
 
-ft.run(main, assets_dir="resources/assets")
+async def run():
+    await ft.run_async(main, assets_dir="resources/assets")

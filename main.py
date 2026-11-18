@@ -4,7 +4,7 @@ import runpy
 import sys
 from pathlib import Path
 
-import terminal
+import app
 
 logger = logging.getLogger("opengpt")
 logger.setLevel(logging.DEBUG)
@@ -29,7 +29,7 @@ def run_mcp_server():
 
 
 async def main():
-    await terminal.main()
+    await app.run()
 
 
 if __name__ == "__main__":
