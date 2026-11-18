@@ -24,6 +24,8 @@ def system_status() -> str:
 @mcp.tool()
 def get_weather(city: str) -> str:
     """Returns the current weather for a given city"""
+    if city == "":
+        return "Bad Request: No city given"
     url = f"https://wttr.in/{city}"
     query_params = {"format": "4", "m": ""}
 
@@ -67,6 +69,7 @@ def remove_block(block: str) -> str:
 def search_online(query: str, timerange: str) -> dict:
     """Returns the Websearch Results to a specific query with an AI summary. Always write your query in english.
     The timezone means how old results can be. You can use one of them: "None", "Day", "Week", "Month", "Year"."""
+
     return websearch.get_search(query, timerange)
 
 

@@ -1,5 +1,5 @@
 version:1.0
-layout:age,location
+layout:age,location,test
 
 START:age
 date:2026-11-14
@@ -10,3 +10,7 @@ START:location
 date:2026-11-15
 text:The user lives in Nuremberg, Germany.
 END:location
+START:test
+date:2026-11-18
+text:This is a test memory
+END:test

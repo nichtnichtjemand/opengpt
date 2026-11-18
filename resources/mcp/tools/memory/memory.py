@@ -85,6 +85,8 @@ def get_blocks():
 
 
 def edit_block(block, text):
+    if (block == "") or (text == ""):
+        return "Bad Request: Block name or text empty"
     content = get_file(True)
     get_blocks()  # Validating Layout
     done = False
@@ -110,6 +112,8 @@ def edit_block(block, text):
 
 
 def add_block(block, text):
+    if (block == "") or (text == ""):
+        return "Bad Request: Block name or text empty"
     blocks = get_blocks()
     if block in blocks:
         raise ValueError("Block already exists")
