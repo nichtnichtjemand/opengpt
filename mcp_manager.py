@@ -9,9 +9,7 @@ from mcp.client.stdio import stdio_client
 class MCPManager:
     def __init__(self, server_script: str):
         server_args = (
-            ["--mcp-server"]
-            if getattr(sys, "frozen", False)
-            else ["-u", server_script]
+            ["--mcp-server"] if getattr(sys, "frozen", False) else ["-u", server_script]
         )
         self.server_params = StdioServerParameters(
             command=sys.executable,
@@ -21,7 +19,7 @@ class MCPManager:
         self.exit_stack = AsyncExitStack()
         self.session: ClientSession | None = None
         self.gemini_tools: list[dict] = []
-        self.openai_tools: list[dict] = []  # <-- NEU
+        self.openai_tools: list[dict] = []
 
     async def connect(self):
         read, write = await self.exit_stack.enter_async_context(
