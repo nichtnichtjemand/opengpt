@@ -10,6 +10,8 @@ def get_files():
 
 
 def get_file_content(path):
+    if not (working / path).resolve().is_relative_to(working):
+        raise ValueError("Can't go to a higher directory!")
     return (working / path).resolve().read_text(encoding="utf-8")
 
 
