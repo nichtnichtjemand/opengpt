@@ -7,9 +7,8 @@ from rich.markdown import Markdown
 import aiapi
 import mcp_manager
 
-logging.basicConfig(level=logging.INFO)
 logging.getLogger("httpx").setLevel(logging.WARNING)
-logger = logging.getLogger("opengpt")
+logger = logging.getLogger("opengpt." + __name__)
 
 console = Console()
 
@@ -19,15 +18,6 @@ def ui_tool_status(tool_name: str, args: dict):
 
 
 async def main():
-
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            "%(asctime)s [%(levelname)s] %(message)s", datefmt="%H:%M:%S"
-        )
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-
     logger.debug("Connect to MCP Server...")
     mcp = mcp_manager.MCPManager("resources/mcp/main_server.py")
     await mcp.connect()
@@ -36,7 +26,7 @@ async def main():
     try:
         logger.info("Started OpenGPT")
         conversation = aiapi.Conversation(
-            mcp=mcp, provider="groq", model="openai/gpt-oss-120b"
+            mcp=mcp,  # provider="groq", model="openai/gpt-oss-120b"
         )
 
         while running:

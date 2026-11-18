@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import platform
 import sys
@@ -12,6 +13,8 @@ from groq import AsyncGroq
 
 from mcp_manager import MCPManager
 
+logger = logging.getLogger("opengpt." + __name__)
+
 load_dotenv()
 
 google_client = genai.Client(
@@ -22,6 +25,11 @@ groq_client = AsyncGroq(
     api_key=os.getenv("GROQ_API_KEY"),
     timeout=30.0,
 )
+
+
+class GenerationError(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
 
 
 class Conversation:
@@ -73,6 +81,8 @@ class Conversation:
                     kwargs["previous_interaction_id"] = self.conversation_id
 
                 interaction = await google_client.aio.interactions.create(**kwargs)
+                if interaction.errors != None:
+                    logger.error("Error: " + str(interaction.errors))
                 self.conversation_id = interaction.id
 
                 function_calls = [
@@ -103,8 +113,10 @@ class Conversation:
                 current_input = tool_results
 
         except Exception as e:  # noqa: BLE001
-            print("Error in Google interactions.create:", type(e).__name__, e)
-            return None
+            logger.error("Error in Google interactions.create:" + e)
+            return GenerationError(
+                "Error in Google interactions.create:", type(e).__name__, e
+            )
 
     async def _send_groq(
         self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
@@ -165,7 +177,7 @@ class Conversation:
                     )
 
         except Exception as e:  # noqa: BLE001
-            print("Error in Groq chat.completions.create:", type(e).__name__, e)
+            logger.error("Error in Groq chat.completions.create:" + e)
             return None
 
     def get_system_prompt(self):

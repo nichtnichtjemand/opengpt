@@ -1,7 +1,24 @@
 import asyncio
+import logging
 import runpy
 import sys
 from pathlib import Path
+
+import terminal
+
+logger = logging.getLogger("opengpt")
+logger.setLevel(logging.DEBUG)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+
+formatter = logging.Formatter(
+    fmt="%(asctime)s [%(levelname).4s] %(module)s: %(message)s", datefmt="%H:%M:%S"
+)
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+logger.debug("Starting OpenGPT...")
 
 
 def run_mcp_server():
@@ -12,8 +29,6 @@ def run_mcp_server():
 
 
 async def main():
-    import terminal
-
     await terminal.main()
 
 
