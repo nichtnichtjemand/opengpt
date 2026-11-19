@@ -94,46 +94,44 @@ def get_skill(name: str) -> str:
 
 
 @mcp.tool()
-def workspace_run_shell(session_id: str, command: str) -> str:
+def workspace_run_shell(command: str) -> str:
     """Executes a bash command in the shell."""
     try:
-        sb = sandbox_manager.get_or_create(session_id)
+        sb = sandbox_manager.get_or_create()
         res = sb.run_shell(command)
         return f"Exit-Code: {res['exit_code']}\nSTDOUT:\n{res['stdout']}\nSTDERR:\n{res['stderr']}"
-    except Exception:
-        return f"Fehler in workspace_run_shell:\n{traceback.format_exc()}"
+    except Exception:  # noqa: BLE001
+        return f"Error in workspace_run_shell:\n{traceback.format_exc()}"
 
 
 @mcp.tool()
-def workspace_write_file(session_id: str, path: str, content: str) -> str:
+def workspace_write_file(path: str, content: str) -> str:
     """Creates or overwrites a whole file."""
-    sb = sandbox_manager.get_or_create(session_id)
+    sb = sandbox_manager.get_or_create()
     res = sb.write_file(path, content)
-    return "File saved." if res["status"] == "ok" else f"Fehler: {res['detail']}"
+    return "File saved." if res["status"] == "ok" else f"Error: {res['detail']}"
 
 
 @mcp.tool()
-def workspace_edit_file(
-    session_id: str, path: str, old_text: str, new_text: str
-) -> str:
+def workspace_edit_file(path: str, old_text: str, new_text: str) -> str:
     """Edits an exact text block (old_text -> new_text) in a file."""
-    sb = sandbox_manager.get_or_create(session_id)
+    sb = sandbox_manager.get_or_create()
     res = sb.edit_file(path, old_text, new_text)
     return "File edited." if res["status"] == "ok" else f"Error: {res['detail']}"
 
 
 @mcp.tool()
-def workspace_read_file(session_id: str, path: str) -> str:
+def workspace_read_file(path: str) -> str:
     """Reads the file content of a file in /workspace."""
-    sb = sandbox_manager.get_or_create(session_id)
+    sb = sandbox_manager.get_or_create()
     res = sb.read_file(path)
     return res["content"] if res["status"] == "ok" else f"Error: {res['message']}"
 
 
 @mcp.tool()
-def workspace_list_files(session_id: str) -> str:
+def workspace_list_files() -> str:
     """Shows the current file structure in /workspace."""
-    sb = sandbox_manager.get_or_create(session_id)
+    sb = sandbox_manager.get_or_create()
     res = sb.list_files()
     return res["tree"] if res["status"] == "ok" else f"Error: {res['message']}"
 

@@ -1,11 +1,9 @@
 import atexit
-import logging
+import os
 import threading
 import time
 
 from .app.sandbox import AgentSandbox
-
-logger = logging.getLogger("openai.sandboxmanager")
 
 
 class SandboxManager:
@@ -16,25 +14,27 @@ class SandboxManager:
 
         self._cleanup_thread = threading.Thread(target=self._cleanup_loop, daemon=True)
         self._cleanup_thread.start()
-
         atexit.register(self.shutdown_all)
 
-    def get_or_create(self, session_id: str) -> AgentSandbox:
+    def get_or_create(self, session_id: str | None = None) -> AgentSandbox:
+        sid = session_id or f"pid-{os.getpid()}"
+
         with self._lock:
             now = time.time()
-            if session_id in self._sessions:
-                entry = self._sessions[session_id]
+            if sid in self._sessions:
+                entry = self._sessions[sid]
                 entry["last_used"] = now
                 return entry["sandbox"]
 
             sb = AgentSandbox()
             sb.start()
-            self._sessions[session_id] = {"sandbox": sb, "last_used": now}
+            self._sessions[sid] = {"sandbox": sb, "last_used": now}
             return sb
 
-    def stop_session(self, session_id: str):
+    def stop_session(self, session_id: str | None = None):
+        sid = session_id or f"pid-{os.getpid()}"
         with self._lock:
-            entry = self._sessions.pop(session_id, None)
+            entry = self._sessions.pop(sid, None)
         if entry:
             entry["sandbox"].stop()
 
@@ -42,15 +42,13 @@ class SandboxManager:
         while True:
             time.sleep(60)
             now = time.time()
-            expired_ids = []
-
             with self._lock:
-                for sid, entry in self._sessions.items():
-                    if now - entry["last_used"] > self.idle_timeout:
-                        expired_ids.append(sid)
-
+                expired_ids = [
+                    sid
+                    for sid, entry in self._sessions.items()
+                    if now - entry["last_used"] > self.idle_timeout
+                ]
             for sid in expired_ids:
-                logger.info(f"Clean old session: {sid}")
                 self.stop_session(sid)
 
     def shutdown_all(self):
