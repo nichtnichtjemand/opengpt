@@ -15,7 +15,10 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # 2. Create venv
 uv sync
 # 3. Duplicate .env.example and fill it with your values
-# 4. Run it
+# 4. Build Dockerfile
+cd resources/mcp/tools/workspace
+sudo docker build -t opengpt-sandbox ./sandbox
+# 5. Run it
 uv run main.py
 ```
 

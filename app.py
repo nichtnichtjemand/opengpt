@@ -155,7 +155,7 @@ async def main(page: ft.Page):
         except Exception as err:  # noqa: BLE001
             chat_history.controls.append(
                 ft.Text(
-                    f"Error: {err}",
+                    f"An error occurred: {err}",
                     color=ft.Colors.RED_400,
                     style=default_text_style,
                 )
