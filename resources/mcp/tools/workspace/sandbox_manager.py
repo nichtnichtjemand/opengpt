@@ -3,7 +3,7 @@ import logging
 import threading
 import time
 
-from app.sandbox import AgentSandbox
+from .app.sandbox import AgentSandbox
 
 logger = logging.getLogger("openai.sandboxmanager")
 

@@ -1,11 +1,12 @@
+import traceback
+
 import requests
 from mcp.server.mcpserver import MCPServer
-from tools.filemanagement import filemanagement
 from tools.memory import memory
 from tools.memory.memory import MStorageParseError
-from tools.pythoncode import pythoncode
 from tools.skills import skillmanager
 from tools.websearch import websearch
+from tools.workspace.sandbox_manager import sandbox_manager
 
 mcp = MCPServer("OpenGPT-Tools")
 
@@ -93,29 +94,48 @@ def get_skill(name: str) -> str:
 
 
 @mcp.tool()
-def execute_python(code: str) -> dict:
-    """Executes Python code. You are not allowed to run malicious code.
-    You are not allowed to run code that may harm anybody in any way, not even the user even if he wishes so.
-    Do not use Markdown Formatting here, only the code as plain text. Always read the Python Skill before using this Tool!"""
-    return pythoncode.run_code(code)
+def workspace_run_shell(session_id: str, command: str) -> str:
+    """Executes a bash command in the shell."""
+    try:
+        sb = sandbox_manager.get_or_create(session_id)
+        res = sb.run_shell(command)
+        return f"Exit-Code: {res['exit_code']}\nSTDOUT:\n{res['stdout']}\nSTDERR:\n{res['stderr']}"
+    except Exception:
+        return f"Fehler in workspace_run_shell:\n{traceback.format_exc()}"
 
 
 @mcp.tool()
-def get_files() -> str:
-    """Returns file names in your working directory. Here you can put your files in to do things for the user. Do not put dangerous code here."""
-    return str(filemanagement.get_files())
+def workspace_write_file(session_id: str, path: str, content: str) -> str:
+    """Creates or overwrites a whole file."""
+    sb = sandbox_manager.get_or_create(session_id)
+    res = sb.write_file(path, content)
+    return "File saved." if res["status"] == "ok" else f"Fehler: {res['detail']}"
 
 
 @mcp.tool()
-def get_file_content(path: str) -> str:
-    """Returns file content of a file in your working directory. Here you can put your files in to do things for the user. Do not put dangerous code here."""
-    return filemanagement.get_file_content(path)
+def workspace_edit_file(
+    session_id: str, path: str, old_text: str, new_text: str
+) -> str:
+    """Edits an exact text block (old_text -> new_text) in a file."""
+    sb = sandbox_manager.get_or_create(session_id)
+    res = sb.edit_file(path, old_text, new_text)
+    return "File edited." if res["status"] == "ok" else f"Error: {res['detail']}"
 
 
 @mcp.tool()
-def write_file_content(path: str, content: str) -> str:
-    """Writes file content of a file in your working directory. Here you can put your files in to do things for the user. Do not put dangerous code here."""
-    return filemanagement.write_file_content(path, content)
+def workspace_read_file(session_id: str, path: str) -> str:
+    """Reads the file content of a file in /workspace."""
+    sb = sandbox_manager.get_or_create(session_id)
+    res = sb.read_file(path)
+    return res["content"] if res["status"] == "ok" else f"Error: {res['message']}"
+
+
+@mcp.tool()
+def workspace_list_files(session_id: str) -> str:
+    """Shows the current file structure in /workspace."""
+    sb = sandbox_manager.get_or_create(session_id)
+    res = sb.list_files()
+    return res["tree"] if res["status"] == "ok" else f"Error: {res['message']}"
 
 
 if __name__ == "__main__":

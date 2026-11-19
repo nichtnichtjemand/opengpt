@@ -102,6 +102,36 @@ class AgentSandbox:
             return {"status": "ok", "content": res["stdout"]}
         return {"status": "error", "message": res["stderr"]}
 
+    def edit_file(self, rel_path: str, old_text: str, new_text: str) -> dict:
+        b64_old = base64.b64encode(old_text.encode("utf-8")).decode("ascii")
+        b64_new = base64.b64encode(new_text.encode("utf-8")).decode("ascii")
+        py_script = (
+            "import base64, pathlib; "
+            "ws = pathlib.Path('/workspace').resolve(); "
+            f"target = (ws / {rel_path!r}).resolve(); "
+            "assert str(target).startswith(str(ws)) and target.is_file(), 'File not found'; "
+            "content = target.read_text(encoding='utf-8'); "
+            f"old = base64.b64decode({b64_old!r}).decode('utf-8'); "
+            f"new = base64.b64decode({b64_new!r}).decode('utf-8'); "
+            "count = content.count(old); "
+            "assert count == 1, f'old_text must be there exactly 1x (found: {count}x)'; "
+            "target.write_text(content.replace(old, new, 1), encoding='utf-8')"
+        )
+        res = self.run_shell(f"python3 -c {py_script!r}")
+        return {
+            "status": "ok" if res["exit_code"] == 0 else "error",
+            "detail": res["stderr"],
+        }
+
+    def list_files(self) -> dict:
+        cmd = (
+            "tree -a -I '.git|__pycache__|.pip_packages|.venv|node_modules' --noreport"
+        )
+        res = self.run_shell(cmd)
+        if res["exit_code"] == 0:
+            return {"status": "ok", "tree": res["stdout"]}
+        return {"status": "error", "message": res["stderr"]}
+
     def stop(self):
         subprocess.run(
             ["docker", "rm", "-f", self.container_name],
