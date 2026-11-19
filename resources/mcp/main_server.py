@@ -95,7 +95,7 @@ def get_skill(name: str) -> str:
 
 @mcp.tool()
 def workspace_run_shell(command: str) -> str:
-    """Executes a bash command in the shell."""
+    """Executes a bash command in the shell. You MUST read the 'workspace' skill instructions before calling this tool for the first time."""
     try:
         sb = sandbox_manager.get_or_create()
         res = sb.run_shell(command)
@@ -106,7 +106,7 @@ def workspace_run_shell(command: str) -> str:
 
 @mcp.tool()
 def workspace_write_file(path: str, content: str) -> str:
-    """Creates or overwrites a whole file."""
+    """Creates or overwrites a whole file. You MUST read the 'workspace' skill instructions before calling this tool for the first time."""
     sb = sandbox_manager.get_or_create()
     res = sb.write_file(path, content)
     return "File saved." if res["status"] == "ok" else f"Error: {res['detail']}"
@@ -114,7 +114,7 @@ def workspace_write_file(path: str, content: str) -> str:
 
 @mcp.tool()
 def workspace_edit_file(path: str, old_text: str, new_text: str) -> str:
-    """Edits an exact text block (old_text -> new_text) in a file."""
+    """Edits an exact text block (old_text -> new_text) in a file. You MUST read the 'workspace' skill instructions before calling this tool for the first time."""
     sb = sandbox_manager.get_or_create()
     res = sb.edit_file(path, old_text, new_text)
     return "File edited." if res["status"] == "ok" else f"Error: {res['detail']}"
@@ -122,7 +122,7 @@ def workspace_edit_file(path: str, old_text: str, new_text: str) -> str:
 
 @mcp.tool()
 def workspace_read_file(path: str) -> str:
-    """Reads the file content of a file in /workspace."""
+    """Reads the file content of a file in /workspace. You MUST read the 'workspace' skill instructions before calling this tool for the first time."""
     sb = sandbox_manager.get_or_create()
     res = sb.read_file(path)
     return res["content"] if res["status"] == "ok" else f"Error: {res['message']}"
@@ -130,7 +130,7 @@ def workspace_read_file(path: str) -> str:
 
 @mcp.tool()
 def workspace_list_files() -> str:
-    """Shows the current file structure in /workspace."""
+    """Shows the current file structure in /workspace. You MUST read the 'workspace' skill instructions before calling this tool for the first time."""
     sb = sandbox_manager.get_or_create()
     res = sb.list_files()
     return res["tree"] if res["status"] == "ok" else f"Error: {res['message']}"
