@@ -18,7 +18,7 @@ def ui_tool_status(tool_name: str, args: dict):
 
 
 async def main():
-    logger.debug("Connect to MCP Server...")
+    logger.debug("Connecting to MCP Server...")
     mcp = mcp_manager.MCPManager("resources/mcp/main_server.py")
     await mcp.connect()
     running = True
