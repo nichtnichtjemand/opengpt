@@ -135,7 +135,7 @@ class AgentSandbox:
             return {"status": "ok", "tree": res["stdout"]}
         return {"status": "error", "message": res["stderr"]}
 
-    def export_folder(self, dest_dir: str = "./exported_workspace") -> str:
+    def export_folder(self, dest_dir: str = "./resources/exported") -> str:
         target_path = pathlib.Path(dest_dir).resolve()
         target_path.mkdir(parents=True, exist_ok=True)
 

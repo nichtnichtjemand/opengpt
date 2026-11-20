@@ -11,5 +11,5 @@ wheels/
 .env
 
 # Resources
-resources/working/**
 resources/mcp/tools/memory/memory.mstorage
+resources/exported/**
