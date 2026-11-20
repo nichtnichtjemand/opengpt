@@ -112,7 +112,7 @@ async def main(page: ft.Page):
             ]
 
             if "Created successfully:" in text:
-                path = text.split("Exported successfully:", 1)[1].strip()
+                path = text.split("Created successfully:", 1)[1].strip()
 
                 content.append(
                     ft.TextButton(
