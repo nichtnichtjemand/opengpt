@@ -107,6 +107,7 @@ async def main(page: ft.Page):
                             selectable=True,
                             extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
                             md_style_sheet=ai_markdown_style,
+                            on_tap_link=handle_markdown_link,
                         ),
                     ),
                 ],
@@ -124,6 +125,7 @@ async def main(page: ft.Page):
                             selectable=True,
                             extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
                             md_style_sheet=tool_markdown_style,
+                            on_tap_link=handle_markdown_link,
                         ),
                     ),
                 ],
@@ -136,6 +138,9 @@ async def main(page: ft.Page):
             create_message_bubble(f"Uses tool {tool_name} with {args}", type="tool")
         )
         page.update()
+
+    async def handle_markdown_link(e: ft.Event[ft.Markdown]):
+        await ft.UrlLauncher().launch_url(e.data)
 
     async def send_message(e):
         message = input_text.value.strip()
