@@ -130,6 +130,8 @@ async def main(page: ft.Page):
             )
 
     def ui_tool_status(tool_name: str, args: dict):
+        args = str(args)
+        args = str(args[:7] + "..." if len(args) > 10 else args)
         chat_history.controls.append(
             create_message_bubble(f"Uses tool {tool_name} with {args}", type="tool")
         )

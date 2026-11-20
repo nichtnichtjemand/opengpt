@@ -1,5 +1,8 @@
 import base64
+import io
+import pathlib
 import subprocess
+import tarfile
 import uuid
 
 
@@ -131,6 +134,31 @@ class AgentSandbox:
         if res["exit_code"] == 0:
             return {"status": "ok", "tree": res["stdout"]}
         return {"status": "error", "message": res["stderr"]}
+
+    def export_folder(self, dest_dir: str = "./exported_workspace") -> str:
+        target_path = pathlib.Path(dest_dir).resolve()
+        target_path.mkdir(parents=True, exist_ok=True)
+
+        cmd = [
+            "docker",
+            "exec",
+            self.container_name,
+            "tar",
+            "-cf",
+            "-",
+            "-C",
+            "/workspace",
+            ".",
+        ]
+        proc = subprocess.run(cmd, capture_output=True, check=False)
+
+        if proc.returncode != 0:
+            return f"Export failed:\n{proc.stderr.decode('utf-8', errors='replace')}"
+
+        with tarfile.open(fileobj=io.BytesIO(proc.stdout), mode="r:") as tar:
+            tar.extractall(path=target_path, filter="data")
+
+        return str("Exported successfully: " + target_path)
 
     def stop(self):
         subprocess.run(

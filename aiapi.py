@@ -58,7 +58,7 @@ class Conversation:
         elif self.provider == "groq":
             return await self._send_groq(message, on_tool_call)
         else:
-            raise ValueError(f"Unbekannter Provider: {self.provider}")
+            raise ValueError(f"Unknown Provider: {self.provider}")
 
     async def _send_google(
         self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
@@ -114,10 +114,8 @@ class Conversation:
                 current_input = tool_results
 
         except Exception as e:  # noqa: BLE001
-            logger.error("Error in Google interactions.create:" + e)
-            return GenerationError(
-                "Error in Google interactions.create:", type(e).__name__, e
-            )
+            logger.error(f"Error in Google interactions.create: {e}")
+            return f"Error in Google interactions.create: {e}"
 
     async def _send_groq(
         self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
@@ -178,7 +176,7 @@ class Conversation:
                     )
 
         except Exception as e:  # noqa: BLE001
-            logger.error("Error in Groq chat.completions.create:" + e)
+            logger.error(f"Error in Groq chat.completions.create: {e}")
             return None
 
     def get_system_prompt(self):
