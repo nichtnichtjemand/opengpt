@@ -1,3 +1,5 @@
+import subprocess
+
 import flet as ft
 
 import aiapi
@@ -75,6 +77,9 @@ async def main(page: ft.Page):
         ),
     )
 
+    def open_folder(path):
+        subprocess.Popen(["xdg-open", path])
+
     def create_message_bubble(text, type):
         if type == "user":
             return ft.Row(
@@ -94,7 +99,29 @@ async def main(page: ft.Page):
                     )
                 ],
             )
-        elif type == "ai":
+
+        if type == "ai":
+            content = [
+                ft.Markdown(
+                    text,
+                    selectable=True,
+                    extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
+                    md_style_sheet=ai_markdown_style,
+                    on_tap_link=handle_markdown_link,
+                )
+            ]
+
+            if "Created successfully:" in text:
+                path = text.split("Exported successfully:", 1)[1].strip()
+
+                content.append(
+                    ft.TextButton(
+                        content="Open folder",
+                        icon=ft.Icons.FOLDER_OPEN,
+                        on_click=lambda e: open_folder(path),
+                    )
+                )
+
             return ft.Row(
                 alignment=ft.MainAxisAlignment.START,
                 vertical_alignment=ft.CrossAxisAlignment.START,
@@ -102,17 +129,16 @@ async def main(page: ft.Page):
                     ft.Container(
                         expand=True,
                         padding=ft.Padding.only(top=4),
-                        content=ft.Markdown(
-                            text,
-                            selectable=True,
-                            extension_set=ft.MarkdownExtensionSet.GITHUB_WEB,
-                            md_style_sheet=ai_markdown_style,
-                            on_tap_link=handle_markdown_link,
+                        content=ft.Column(
+                            controls=content,
+                            spacing=4,
+                            horizontal_alignment=ft.CrossAxisAlignment.START,
                         ),
-                    ),
+                    )
                 ],
             )
-        elif type == "tool":
+
+        if type == "tool":
             return ft.Row(
                 alignment=ft.MainAxisAlignment.START,
                 vertical_alignment=ft.CrossAxisAlignment.START,
@@ -127,13 +153,13 @@ async def main(page: ft.Page):
                             md_style_sheet=tool_markdown_style,
                             on_tap_link=handle_markdown_link,
                         ),
-                    ),
+                    )
                 ],
             )
 
     def ui_tool_status(tool_name: str, args: dict):
         args = str(args)
-        args = str(args[:7] + "..." if len(args) > 30 else args)
+        args = str(args[:30] + "..." if len(args) > 30 else args)
         chat_history.controls.append(
             create_message_bubble(f"Uses tool {tool_name} with {args}", type="tool")
         )
