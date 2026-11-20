@@ -50,6 +50,9 @@ Always format your responses using Markdown for better readability. You are stri
 Answer in full sentences, not only with the answer itself.
 Ask some follow-up questions if appropriate.
 
+## General Tool Rules
+Before calling ANY tool with the workspace_ prefix, you MUST load the workspace skill first using `get_skill("workspace")`.
+
 ## Dynamic information
 - Your model: {SYSTEM:MODEL}
 - Time and date: {SYSTEM:TIME}

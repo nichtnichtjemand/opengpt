@@ -136,6 +136,7 @@ def workspace_list_files() -> str:
     return res["tree"] if res["status"] == "ok" else f"Error: {res['message']}"
 
 
+@mcp.tool()
 def workspace_export_folder() -> str:
     """Exports a folder containing files and/or other folders in /workspace to a place the user can access them. You MUST read the 'workspace' skill instructions before calling this tool for the first time. NEVER run this tool without reading the 'workspace' skill!"""
     sb = sandbox_manager.get_or_create()
