@@ -39,7 +39,7 @@ The user does not have direct access to the `/workspace` directory. To share fil
 
 * **Path requirement:** Provide a folder path relative to `/workspace` (exporting the root `/workspace` folder itself is not allowed).
 * **Example:** If the user asks you to code a game, create a dedicated subfolder (e.g., `/workspace/my-game`), save all game files inside it, and then export `my-game`.
-* **Answer:** You should include `Created successfully: ` plus the path at the end of your message for a button to open it getting rendered, for example: `Exported successfully: /home/user/OpenGPT/resources/exported/project`. You ALWAYS need to write this at the end of a turn when you exported files, you are NOT allowed to skip it at the end of your message.
+* **Answer:** You should include `Created successfully: ` plus the path at the end of your message for a button to open it getting rendered, for example: `Created successfully: /home/user/OpenGPT/resources/exported/project`. You ALWAYS need to write this at the end of a turn when you exported files, you are NOT allowed to skip it at the end of your message.
 
 
 ## Best Practices & Rules
