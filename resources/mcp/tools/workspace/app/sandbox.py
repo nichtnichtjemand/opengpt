@@ -158,7 +158,7 @@ class AgentSandbox:
         with tarfile.open(fileobj=io.BytesIO(proc.stdout), mode="r:") as tar:
             tar.extractall(path=target_path, filter="data")
 
-        return str("Exported successfully: " + target_path)
+        return f"Exported successfully: {target_path}"
 
     def stop(self):
         subprocess.run(

@@ -1,3 +1,4 @@
+import logging
 import traceback
 
 import requests
@@ -9,6 +10,8 @@ from tools.websearch import websearch
 from tools.workspace.sandbox_manager import sandbox_manager
 
 mcp = MCPServer("OpenGPT-Tools")
+
+logger = logging.getLogger("opengpt.mainmcpserver")
 
 
 @mcp.tool()
@@ -139,8 +142,13 @@ def workspace_list_files() -> str:
 @mcp.tool()
 def workspace_export_folder() -> str:
     """Exports a folder containing files and/or other folders in /workspace to a place the user can access them. You MUST read the 'workspace' skill instructions before calling this tool for the first time. NEVER run this tool without reading the 'workspace' skill!"""
-    sb = sandbox_manager.get_or_create()
-    return sb.export_folder()
+    try:
+        sb = sandbox_manager.get_or_create()
+        return sb.export_folder()
+    except Exception as e:  # noqa: BLE001
+        msg = f"An Error occured: {e}"
+        logger.error(msg)
+        return msg
 
 
 if __name__ == "__main__":
