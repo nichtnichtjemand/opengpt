@@ -6,10 +6,10 @@ import aiapi
 import mcp_manager
 
 
-async def main(page: ft.Page):
+async def main(page: ft.Page, mcp):
     page.title = "OpenGPT"
-    page.theme_mode = ft.ThemeMode.DARK
-    page.bgcolor = "#000000"
+    page.theme_mode = ft.ThemeMode.LIGHT
+    page.bgcolor = "#f5ebe0"
     page.padding = 0
 
     page.fonts = {
@@ -19,7 +19,7 @@ async def main(page: ft.Page):
     }
 
     default_text_style = ft.TextStyle(
-        color="#FFFFFF",
+        color="#000000",
         font_family="Roboto",
         font_family_fallback=["Emoji"],
     )
@@ -41,13 +41,13 @@ async def main(page: ft.Page):
     page.theme = custom_theme
     page.dark_theme = custom_theme
 
-    mcp = mcp_manager.MCPManager("resources/mcp/main_server.py")
-    await mcp.connect()
     conversation = aiapi.Conversation(
-        #        mcp=mcp, provider="groq", model="openai/gpt-oss-120b"
         mcp=mcp,
-        provider="google",
-        model="gemini-3.5-flash-lite",
+        provider="groq",
+        model="openai/gpt-oss-20b",
+        # mcp=mcp,
+        # provider="google",
+        # model="gemini-3.5-flash-lite",
     )
 
     chat_history = ft.ListView(
@@ -95,7 +95,7 @@ async def main(page: ft.Page):
                             color="#FFFFFF",
                             style=default_text_style,
                         ),
-                        bgcolor="#27272A",
+                        bgcolor="#38383A",
                         padding=ft.Padding.symmetric(horizontal=18, vertical=12),
                         border_radius=ft.BorderRadius.all(20),
                         width=480 if len(text) > 60 else None,
@@ -206,7 +206,7 @@ async def main(page: ft.Page):
     input_text = ft.TextField(
         hint_text="Message to OpenGPT...",
         hint_style=ft.TextStyle(
-            color="#71717A",
+            color="#3A3A3A",
             font_family="Roboto",
             font_family_fallback=["Emoji"],
         ),
@@ -225,14 +225,14 @@ async def main(page: ft.Page):
     send_button = ft.IconButton(
         icon=ft.Icons.ARROW_UPWARD_ROUNDED,
         icon_color="#121214",
-        bgcolor="#FFFFFF",
+        bgcolor="#d5bdaf",
         icon_size=20,
         on_click=send_message,
     )
 
     input_bar = ft.Container(
-        bgcolor="#212121",
-        border=ft.Border.all(1, "#212121"),
+        bgcolor="#e3d5ca",
+        border=ft.Border.all(1, "#e3d5ca"),
         border_radius=26,
         padding=ft.Padding.only(left=20, right=8, top=6, bottom=6),
         content=ft.Row(
@@ -265,4 +265,9 @@ async def main(page: ft.Page):
 
 
 async def run():
-    await ft.run_async(main, assets_dir="resources/assets")
+    mcp = mcp_manager.MCPManager("resources/mcp/main_server.py")
+    try:
+        await mcp.connect()
+        await ft.run_async(main, assets_dir="resources/assets")
+    finally:
+        await mcp.close()
