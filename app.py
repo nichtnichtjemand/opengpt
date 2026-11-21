@@ -11,7 +11,6 @@ async def main(page: ft.Page, mcp):
     page.theme_mode = ft.ThemeMode.LIGHT
     page.bgcolor = "#f5ebe0"
     page.padding = 0
-
     page.fonts = {
         "Roboto": "roboto.ttf",
         "Emoji": "NotoColorEmoji.ttf",
@@ -262,6 +261,8 @@ async def main(page: ft.Page, mcp):
             expand=True,
         )
     )
+    page.window.visible = True
+    page.update()
 
 
 async def run():
@@ -274,8 +275,7 @@ async def run():
             await main(page, mcp)
 
         await ft.run_async(
-            app_main,
-            assets_dir="resources/assets",
+            app_main, assets_dir="resources/assets", view=ft.AppView.FLET_APP_HIDDEN
         )
     finally:
         await mcp.close()
