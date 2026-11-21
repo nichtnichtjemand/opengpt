@@ -266,8 +266,16 @@ async def main(page: ft.Page, mcp):
 
 async def run():
     mcp = mcp_manager.MCPManager("resources/mcp/main_server.py")
+
     try:
         await mcp.connect()
-        await ft.run_async(main, assets_dir="resources/assets")
+
+        async def app_main(page: ft.Page):
+            await main(page, mcp)
+
+        await ft.run_async(
+            app_main,
+            assets_dir="resources/assets",
+        )
     finally:
         await mcp.close()
