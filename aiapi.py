@@ -16,7 +16,21 @@ from resources.mcp.tools.skills.skillmanager import get_skills
 
 logger = logging.getLogger("opengpt." + __name__)
 
-load_dotenv()
+def bundle_root() -> Path:
+    candidates = [
+        Path(getattr(sys, "_MEIPASS", "")),
+        Path(__file__).resolve().parent,
+        Path.cwd(),
+    ]
+    for candidate in candidates:
+        if candidate and (candidate / "resources").is_dir():
+            return candidate
+    return Path(__file__).resolve().parent
+
+
+env_path = bundle_root() / ".env"
+if env_path.is_file():
+    load_dotenv(env_path)
 
 google_client = genai.Client(
     api_key=os.getenv("GOOGLE_API_KEY"),
@@ -180,8 +194,7 @@ class Conversation:
             return None
 
     def get_system_prompt(self):
-        bundle_root = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
-        prompt_path = bundle_root / "resources" / "prompts" / "systemprompt1.txt"
+        prompt_path = bundle_root() / "resources" / "prompts" / "systemprompt1.txt"
         with prompt_path.open("r", encoding="utf-8") as file:
             content = file.read()
 

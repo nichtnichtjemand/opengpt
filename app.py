@@ -16,6 +16,7 @@ async def main(page: ft.Page, mcp):
         "Emoji": "NotoColorEmoji.ttf",
         "monospace": "robotomono.ttf",
     }
+    page.window.icon = "icon.png"
 
     default_text_style = ft.TextStyle(
         color="#000000",
@@ -275,7 +276,7 @@ async def run():
             await main(page, mcp)
 
         await ft.run_async(
-            app_main, assets_dir="resources/assets", view=ft.AppView.FLET_APP_HIDDEN
+            app_main, assets_dir="assets", view=ft.AppView.FLET_APP_HIDDEN
         )
     finally:
         await mcp.close()
