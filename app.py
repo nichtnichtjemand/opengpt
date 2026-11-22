@@ -107,6 +107,17 @@ async def main(page: ft.Page, mcp):
 
         conversation = aiapi.Conversation.load(chat_id, mcp=mcp)
 
+        chat_history.controls.clear()
+
+        for item in conversation.ui_history:
+            chat_history.controls.append(
+                create_message_bubble(item["text"], item["type"])
+            )
+
+        status_text.value = ""
+        input_text.value = ""
+        page.update()
+
     ai_markdown_style = ft.MarkdownStyleSheet(
         p_text_style=default_text_style,
         h1_text_style=default_text_style,
@@ -262,6 +273,7 @@ async def main(page: ft.Page, mcp):
                 message=message, on_tool_call=ui_tool_status
             )
             chat_history.controls.append(create_message_bubble(reply, type="ai"))
+            refresh_chat_list()
         except Exception as err:  # noqa: BLE001
             chat_history.controls.append(
                 ft.Text(
