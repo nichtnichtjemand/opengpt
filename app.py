@@ -298,17 +298,45 @@ async def main(page: ft.Page, mcp):
 
     def refresh_chat_list():
         saved_chats = aiapi.Conversation.list_saved_chats()
-
         chat_list.controls.clear()
 
         for chat in saved_chats:
             chat_list.controls.append(
-                ft.ListTile(
-                    title=ft.Text(chat["title"]),
-                    subtitle=ft.Text(chat["model"], size=11),
+                ft.Container(
+                    content=ft.Row(
+                        controls=[
+                            ft.Icon(
+                                ft.Icons.CHAT_OUTLINED,
+                                size=18,
+                                color="#62564f",
+                            ),
+                            ft.Column(
+                                controls=[
+                                    ft.Text(
+                                        chat["title"],
+                                        size=13,
+                                        weight=ft.FontWeight.W_500,
+                                        max_lines=1,
+                                        overflow=ft.TextOverflow.ELLIPSIS,
+                                    ),
+                                    ft.Text(
+                                        chat["model"],
+                                        size=10,
+                                        color="#8E8178",
+                                    ),
+                                ],
+                                spacing=2,
+                                expand=True,
+                            ),
+                        ],
+                        spacing=10,
+                    ),
+                    padding=10,
+                    border_radius=10,
                     on_click=lambda e, chat_id=chat["chat_id"]: load_conversation(
                         chat_id
                     ),
+                    ink=True,
                 )
             )
 
@@ -368,18 +396,31 @@ async def main(page: ft.Page, mcp):
     sidebar = ft.Container(
         width=260,
         bgcolor="#eee2d8",
-        padding=12,
+        padding=14,
         content=ft.Column(
             controls=[
-                ft.Button(
-                    "＋ New Chat",
-                    on_click=lambda e: new_conversation(),
+                ft.Container(
+                    content=ft.Button(
+                        "New Chat",
+                        on_click=lambda e: new_conversation(),
+                        expand=True,
+                    ),
+                    padding=ft.Padding.only(bottom=8),
                 ),
-                ft.Divider(),
-                ft.Text("Conversations", weight=ft.FontWeight.BOLD),
+                ft.Divider(color="#d5c5b9"),
+                ft.Container(
+                    content=ft.Text(
+                        "CONVERSATIONS",
+                        size=11,
+                        weight=ft.FontWeight.BOLD,
+                        color="#8E8178",
+                    ),
+                    padding=ft.Padding.only(left=8, top=8, bottom=8),
+                ),
                 chat_list,
             ],
             expand=True,
+            spacing=4,
         ),
     )
 
