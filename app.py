@@ -140,8 +140,21 @@ async def main(page: ft.Page, mcp):
     )
 
     def open_folder(path):
-        if os.path.exists(path):
-            subprocess.Popen(["xdg-open", path])
+        path = os.path.abspath(path)
+
+        if not os.path.isdir(path):
+            status_text.value = f"Folder not found: {path}"
+            page.update()
+            return
+
+        try:
+            subprocess.Popen(
+                ["xdg-open", path],
+                start_new_session=True,
+            )
+        except OSError as error:
+            status_text.value = f"Error while opening: {error}"
+            page.update()
 
     def create_message_bubble(text, type):
         if type == "user":
@@ -175,7 +188,13 @@ async def main(page: ft.Page, mcp):
             ]
 
             if "Created successfully:" in text:
-                path = text.split("Created successfully:", 1)[1].strip()
+                path = (
+                    text.split("Created successfully:", 1)[1]
+                    .strip()
+                    .splitlines()[0]
+                    .strip()
+                    .strip("`\"'")
+                )
 
                 content.append(
                     ft.TextButton(
