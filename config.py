@@ -1,5 +1,4 @@
 import os
-import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -15,14 +14,16 @@ def get_env_path() -> Path:
 
 
 def load_api_keys() -> None:
+    local_env = Path(__file__).resolve().parent / ".env"
+    if not local_env.is_file():
+        local_env = Path.cwd() / ".env"
+
+    if local_env.is_file():
+        load_dotenv(local_env, override=True)
+
     env_path = get_env_path()
     if env_path.is_file():
         load_dotenv(env_path, override=False)
-
-    if not getattr(sys, "frozen", False) and not getattr(sys, "_MEIPASS", None):
-        local_env = Path.cwd() / ".env"
-        if local_env.is_file():
-            load_dotenv(local_env, override=False)
 
 
 def get_api_key(name: str) -> str:
