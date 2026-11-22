@@ -43,6 +43,8 @@ async def main(page: ft.Page, mcp):
     page.theme = custom_theme
     page.dark_theme = custom_theme
 
+    can_submit = True
+
     if not get_api_key("GROQ_API_KEY"):
         key_field = ft.TextField(
             label="Groq API Key",
@@ -99,6 +101,11 @@ async def main(page: ft.Page, mcp):
     )
 
     status_text = ft.Text(size=12, color="#8E8E93", italic=True)
+
+    def load_conversation(chat_id):
+        nonlocal conversation
+
+        conversation = aiapi.Conversation.load(chat_id, mcp=mcp)
 
     ai_markdown_style = ft.MarkdownStyleSheet(
         p_text_style=default_text_style,
@@ -239,9 +246,12 @@ async def main(page: ft.Page, mcp):
         message = input_text.value.strip()
         if not message:
             return
+        nonlocal can_submit
+        if not can_submit:
+            return
+        can_submit = False
 
         input_text.value = ""
-        input_text.disabled = True
         send_button.disabled = True
         status_text.value = "OpenGPT is thinking..."
         chat_history.controls.append(create_message_bubble(message, type="user"))
@@ -263,10 +273,34 @@ async def main(page: ft.Page, mcp):
 
         finally:
             status_text.value = ""
-            input_text.disabled = False
             send_button.disabled = False
+            can_submit = True
             page.update()
             await input_text.focus()
+
+    chat_list = ft.Column(
+        spacing=4,
+        scroll=ft.ScrollMode.AUTO,
+        expand=True,
+    )
+
+    def refresh_chat_list():
+        saved_chats = aiapi.Conversation.list_saved_chats()
+
+        chat_list.controls.clear()
+
+        for chat in saved_chats:
+            chat_list.controls.append(
+                ft.ListTile(
+                    title=ft.Text(chat["title"]),
+                    subtitle=ft.Text(chat["model"], size=11),
+                    on_click=lambda e, chat_id=chat["chat_id"]: load_conversation(
+                        chat_id
+                    ),
+                )
+            )
+
+        page.update()
 
     input_text = ft.TextField(
         hint_text="Message to OpenGPT...",
@@ -319,14 +353,52 @@ async def main(page: ft.Page, mcp):
             spacing=8,
         ),
     )
+    sidebar = ft.Container(
+        width=260,
+        bgcolor="#eee2d8",
+        padding=12,
+        content=ft.Column(
+            controls=[
+                ft.Button(
+                    "＋ New Chat",
+                    on_click=lambda e: new_conversation(),
+                ),
+                ft.Divider(),
+                ft.Text("Conversations", weight=ft.FontWeight.BOLD),
+                chat_list,
+            ],
+            expand=True,
+        ),
+    )
+
+    def new_conversation():
+        nonlocal conversation
+
+        conversation = aiapi.Conversation(
+            mcp=mcp,
+            provider="google",
+            model="gemini-3.5-flash-lite",
+        )
+
+        chat_history.controls.clear()
+        status_text.value = ""
+        input_text.value = ""
+
+        refresh_chat_list()
+        page.update()
 
     page.add(
         ft.Row(
-            controls=[main_column],
-            alignment=ft.MainAxisAlignment.CENTER,
+            controls=[
+                sidebar,
+                main_column,
+            ],
+            spacing=0,
             expand=True,
         )
     )
+
+    refresh_chat_list()
     page.window.visible = True
     page.update()
 

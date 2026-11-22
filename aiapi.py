@@ -1,6 +1,7 @@
 import json
 import locale
 import logging
+import os
 import platform
 import sys
 import uuid
@@ -12,6 +13,7 @@ import json_repair
 from google import genai
 from groq import AsyncGroq, BadRequestError
 
+import config
 from config import get_api_key, load_api_keys
 from mcp_manager import MCPManager
 from resources.mcp.tools.skills.skillmanager import get_skills
@@ -34,6 +36,30 @@ def bundle_root() -> Path:
             if prompt.is_file():
                 return candidate
     return Path(__file__).resolve().parent
+
+
+def get_chats_dir() -> Path:
+    config_file = getattr(config, "CONFIG_FILE", None) or getattr(
+        config, "ENV_FILE", None
+    )
+    if config_file:
+        base_dir = Path(config_file).resolve().parent
+    elif sys.platform == "win32":
+        base_dir = (
+            Path(os.getenv("LOCALAPPDATA", Path.home() / "AppData" / "Local"))
+            / "OpenGPT"
+        )
+    elif sys.platform == "darwin":
+        base_dir = Path.home() / "Library" / "Application Support" / "OpenGPT"
+    else:
+        base_dir = (
+            Path(os.getenv("XDG_DATA_HOME", Path.home() / ".local" / "share"))
+            / "OpenGPT"
+        )
+
+    chats_dir = base_dir / "chats"
+    chats_dir.mkdir(parents=True, exist_ok=True)
+    return chats_dir
 
 
 load_api_keys()
@@ -82,26 +108,141 @@ class Conversation:
         mcp: MCPManager,
         provider: str = "google",
         model: str = "gemini-3.5-flash-lite",
+        chat_id: str | None = None,
+        auto_save: bool = True,
     ):
         self.mcp = mcp
         self.provider = provider.lower()
         self.model = model
+        self.chat_id = chat_id or uuid.uuid4().hex
+        self.auto_save = auto_save
+        self.created_at = datetime.now().isoformat()
+        self.updated_at = self.created_at
 
         self.system_prompt = self.get_system_prompt()
-
         self.conversation_id = None
 
         self.messages: list[dict] = [{"role": "system", "content": self.system_prompt}]
+        self.ui_history: list[dict] = []
+
+    def add_ui_entry(self, entry_type: str, text: str) -> None:
+        self.ui_history.append({"type": entry_type, "text": text})
+        if self.auto_save:
+            self.save()
+
+    def save(self, directory: str | Path | None = None) -> Path:
+        save_dir = Path(directory) if directory else get_chats_dir()
+        save_dir.mkdir(parents=True, exist_ok=True)
+        file_path = save_dir / f"{self.chat_id}.json"
+
+        self.updated_at = datetime.now().isoformat()
+
+        data = {
+            "chat_id": self.chat_id,
+            "provider": self.provider,
+            "model": self.model,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "conversation_id": self.conversation_id,
+            "messages": self.messages,
+            "ui_history": self.ui_history,
+        }
+
+        with file_path.open("w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+        return file_path
+
+    @classmethod
+    def load(
+        cls,
+        chat_id_or_path: str | Path,
+        mcp: MCPManager,
+        auto_save: bool = True,
+    ) -> Conversation:
+        path = Path(chat_id_or_path)
+        if not path.is_file():
+            path = get_chats_dir() / f"{chat_id_or_path}.json"
+
+        with path.open("r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        conv = cls(
+            mcp=mcp,
+            provider=data["provider"],
+            model=data["model"],
+            chat_id=data["chat_id"],
+            auto_save=auto_save,
+        )
+        conv.created_at = data.get("created_at", conv.created_at)
+        conv.updated_at = data.get("updated_at", conv.updated_at)
+        conv.conversation_id = data.get("conversation_id")
+        conv.messages = data.get("messages", [])
+        conv.ui_history = data.get("ui_history", [])
+        return conv
+
+    @staticmethod
+    def list_saved_chats(directory: str | Path | None = None) -> list[dict]:
+        save_dir = Path(directory) if directory else get_chats_dir()
+        if not save_dir.exists():
+            return []
+
+        chats = []
+        for file_path in save_dir.glob("*.json"):
+            try:
+                with file_path.open("r", encoding="utf-8") as f:
+                    data = json.load(f)
+
+                first_user_msg = next(
+                    (
+                        item.get("text", "")
+                        for item in data.get("ui_history", [])
+                        if item.get("type") == "user"
+                    ),
+                    "Neuer Chat",
+                )
+                chats.append(
+                    {
+                        "chat_id": data.get("chat_id", file_path.stem),
+                        "title": first_user_msg[:60],
+                        "provider": data.get("provider"),
+                        "model": data.get("model"),
+                        "created_at": data.get("created_at"),
+                        "updated_at": data.get("updated_at"),
+                        "file_path": str(file_path),
+                    }
+                )
+            except Exception as e:  # noqa: BLE001
+                logger.warning(f"Konnte Chat-Datei {file_path} nicht lesen: {e}")
+
+        chats.sort(key=lambda x: x.get("updated_at") or "", reverse=True)
+        return chats
+
+    @staticmethod
+    def delete_chat(chat_id: str, directory: str | Path | None = None) -> bool:
+        save_dir = Path(directory) if directory else get_chats_dir()
+        file_path = save_dir / f"{chat_id}.json"
+        if file_path.is_file():
+            file_path.unlink()
+            return True
+        return False
 
     async def send_message(
         self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
     ) -> str | None:
+        self.add_ui_entry("user", message)
+
         if self.provider == "google":
-            return await self._send_google(message, on_tool_call)
+            response = await self._send_google(message, on_tool_call)
         elif self.provider == "groq":
-            return await self._send_groq(message, on_tool_call)
+            response = await self._send_groq(message, on_tool_call)
         else:
             raise ValueError(f"Unknown Provider: {self.provider}")
+
+        if response:
+            self.add_ui_entry("ai", response)
+
+        return response
 
     async def _send_google(
         self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
@@ -112,6 +253,7 @@ class Conversation:
             "thinking_level": "minimal",
         }
         current_input = message
+        self.messages.append({"role": "user", "content": message})
 
         try:
             while True:
@@ -126,7 +268,7 @@ class Conversation:
                     kwargs["previous_interaction_id"] = self.conversation_id
 
                 interaction = await google_client.aio.interactions.create(**kwargs)
-                if interaction.errors != None:
+                if interaction.errors is not None:
                     logger.error("Error: " + str(interaction.errors))
                 self.conversation_id = interaction.id
 
@@ -135,7 +277,9 @@ class Conversation:
                 ]
 
                 if not function_calls:
-                    return interaction.output_text or ""
+                    reply = interaction.output_text or ""
+                    self.messages.append({"role": "assistant", "content": reply})
+                    return reply
 
                 tool_results = []
                 for call in function_calls:
