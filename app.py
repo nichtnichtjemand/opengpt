@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 import flet as ft
@@ -81,7 +82,8 @@ async def main(page: ft.Page, mcp):
     )
 
     def open_folder(path):
-        subprocess.Popen(["xdg-open", path])
+        if os.path.exists(path):
+            subprocess.Popen(["xdg-open", path])
 
     def create_message_bubble(text, type):
         if type == "user":
