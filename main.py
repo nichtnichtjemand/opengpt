@@ -38,7 +38,11 @@ def run_mcp_server():
         Path.cwd(),
     ]
     bundle_root = next(
-        (candidate for candidate in candidates if candidate and (candidate / "resources").is_dir()),
+        (
+            candidate
+            for candidate in candidates
+            if candidate and (candidate / "resources").is_dir()
+        ),
         Path(__file__).resolve().parent,
     )
     mcp_root = bundle_root / "resources" / "mcp"

@@ -1,7 +1,6 @@
 import json
 import locale
 import logging
-import os
 import platform
 import sys
 import uuid
@@ -13,9 +12,9 @@ import json_repair
 from google import genai
 from groq import AsyncGroq, BadRequestError
 
+from config import get_api_key, load_api_keys
 from mcp_manager import MCPManager
 from resources.mcp.tools.skills.skillmanager import get_skills
-from config import get_api_key, get_env_path, load_api_keys
 
 logger = logging.getLogger("opengpt." + __name__)
 
