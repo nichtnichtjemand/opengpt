@@ -222,7 +222,7 @@ class Conversation:
 
                     calls_to_run = [(fake_call_id, func_name, func_args)]
                 else:
-                    raise e
+                    raise
 
             for call_id, func_name, func_args in calls_to_run:
                 if on_tool_call:
