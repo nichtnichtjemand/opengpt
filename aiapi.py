@@ -1,6 +1,8 @@
 import json
 import os
+import sys
 from collections.abc import Callable
+from pathlib import Path
 
 from google import genai
 from groq import AsyncGroq
@@ -180,6 +182,20 @@ class Conversation:
             return None
 
     def get_system_prompt(self):
-        with open("resources/prompts/systemprompt1.txt", "r", encoding="utf-8") as file:
+        candidates = [
+            Path(getattr(sys, "_MEIPASS", "")),
+            Path(__file__).resolve().parent,
+            Path.cwd(),
+        ]
+        prompt_path = next(
+            (
+                candidate / "resources" / "prompts" / "systemprompt1.txt"
+                for candidate in candidates
+                if candidate
+                and (candidate / "resources" / "prompts" / "systemprompt1.txt").is_file()
+            ),
+            Path("resources/prompts/systemprompt1.txt"),
+        )
+        with prompt_path.open("r", encoding="utf-8") as file:
             content = file.read()
         return content

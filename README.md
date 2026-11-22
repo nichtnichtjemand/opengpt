@@ -22,5 +22,20 @@ Beim Start fragt OpenGPT die Google-, Groq- und Tavily-API-Schlüssel über
 `input()` ab. Die Schlüssel werden nur zur Laufzeit in der Prozessumgebung
 gespeichert und nicht in den Build oder in eine `.env`-Datei geschrieben.
 
+## Standalone-Build erstellen
+```bash
+uv sync
+uv run pyinstaller --clean --noconfirm opengpt.spec
+```
+
+Das eigenständige Programm liegt unter:
+```text
+dist/opengpt/opengpt
+```
+
+Beim Start vom Build muss weiterhin der ganze Ordner `dist/opengpt`
+mitgeführt werden. Die gebündelten Ressourcen liegen unter
+`dist/opengpt/_internal/resources`.
+
 ## Contributing
 Feel free to create a PR if you have things to change! I'm happy for each contribution.
