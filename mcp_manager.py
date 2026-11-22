@@ -1,8 +1,8 @@
+import importlib.util
 import os
 import sys
-import importlib.util
-from pathlib import Path
 from contextlib import AsyncExitStack
+from pathlib import Path
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -19,24 +19,23 @@ class MCPManager:
             or "__mamp" in executable_name
         )
         if not script_path.is_absolute():
-            candidates = [
+            starts = [
                 Path(getattr(sys, "_MEIPASS", "")),
-                Path(__file__).resolve().parent,
+                Path(__file__).resolve(),
                 Path.cwd(),
             ]
-            script_path = next(
-                (
-                    candidate / server_script
-                    for candidate in candidates
-                    if candidate and (candidate / server_script).is_file()
-                ),
-                script_path,
-            )
-        server_args = (
-            ["--mcp-server"]
-            if bundle_mode
-            else ["-u", str(script_path)]
-        )
+            for start in starts:
+                if not start or not str(start):
+                    continue
+                start = start if start.is_dir() else start.parent
+                for candidate in (start, *start.parents):
+                    resolved = candidate / server_script
+                    if resolved.is_file():
+                        script_path = resolved
+                        break
+                if script_path.is_absolute() and script_path.is_file():
+                    break
+        server_args = ["--mcp-server"] if bundle_mode else ["-u", str(script_path)]
         self.server_params = StdioServerParameters(
             command=sys.executable,
             args=server_args,
@@ -55,24 +54,32 @@ class MCPManager:
 
     async def connect(self):
         if self.bundle_mode:
-            mcp_root = next(
-                (
-                    candidate / "resources" / "mcp"
-                    for candidate in (
-                        Path(getattr(sys, "_MEIPASS", "")),
-                        Path(__file__).resolve().parent,
-                        Path.cwd(),
-                    )
-                    if candidate
-                    and (candidate / "resources" / "mcp").is_dir()
-                ),
-                Path("resources/mcp"),
-            )
+            mcp_root = None
+            starts = [
+                Path(getattr(sys, "_MEIPASS", "")),
+                Path(__file__).resolve(),
+                Path.cwd(),
+            ]
+            for start in starts:
+                if not start or not str(start):
+                    continue
+                start = start if start.is_dir() else start.parent
+                for candidate in (start, *start.parents):
+                    resolved = candidate / "resources" / "mcp"
+                    if resolved.is_dir():
+                        mcp_root = resolved
+                        break
+                if mcp_root is not None:
+                    break
+            if mcp_root is None:
+                raise RuntimeError("Bundled MCP resources directory was not found.")
             sys.path.insert(0, str(mcp_root))
             server_py = mcp_root / "main_server.py"
             server_pyc = mcp_root / "main_server.pyc"
             server_file = server_py if server_py.is_file() else server_pyc
-            spec = importlib.util.spec_from_file_location("opengpt_mcp_server", server_file)
+            spec = importlib.util.spec_from_file_location(
+                "opengpt_mcp_server", server_file
+            )
             if spec is None or spec.loader is None:
                 raise RuntimeError(f"Cannot load MCP server: {server_file}")
             module = importlib.util.module_from_spec(spec)
@@ -139,11 +146,11 @@ class MCPManager:
             result = await self.direct_server.call_tool(name, arguments)
             if getattr(result, "structuredContent", None):
                 import json
+
                 return json.dumps(result.structuredContent)
             if getattr(result, "content", None):
                 return "\n".join(
-                    getattr(item, "text", str(item))
-                    for item in result.content
+                    getattr(item, "text", str(item)) for item in result.content
                 )
             return ""
 

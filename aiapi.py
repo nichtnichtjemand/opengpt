@@ -10,40 +10,66 @@ from datetime import datetime
 from pathlib import Path
 
 import json_repair
-from dotenv import load_dotenv
 from google import genai
 from groq import AsyncGroq, BadRequestError
 
 from mcp_manager import MCPManager
 from resources.mcp.tools.skills.skillmanager import get_skills
+from config import get_api_key, get_env_path, load_api_keys
 
 logger = logging.getLogger("opengpt." + __name__)
 
 
 def bundle_root() -> Path:
-    candidates = [
+    start_candidates = [
         Path(getattr(sys, "_MEIPASS", "")),
-        Path(__file__).resolve().parent,
+        Path(__file__).resolve(),
         Path.cwd(),
     ]
-    for candidate in candidates:
-        if candidate and (candidate / "resources").is_dir():
-            return candidate
+    for start in start_candidates:
+        if not start or not str(start):
+            continue
+        start = start if start.is_dir() else start.parent
+        for candidate in (start, *start.parents):
+            prompt = candidate / "resources" / "prompts" / "systemprompt1.txt"
+            if prompt.is_file():
+                return candidate
     return Path(__file__).resolve().parent
 
 
-env_path = bundle_root() / ".env"
-if env_path.is_file():
-    load_dotenv(env_path)
+load_api_keys()
 
-google_client = genai.Client(
-    api_key=os.getenv("GOOGLE_API_KEY"),
-    http_options={"timeout": 30000},
-)
-groq_client = AsyncGroq(
-    api_key=os.getenv("GROQ_API_KEY"),
-    timeout=30.0,
-)
+google_client = None
+groq_client = None
+
+
+def reset_api_clients() -> None:
+    global google_client, groq_client
+    google_client = None
+    groq_client = None
+
+
+def get_groq_client() -> AsyncGroq:
+    global groq_client
+    api_key = get_api_key("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY is not configured.")
+    if groq_client is None:
+        groq_client = AsyncGroq(api_key=api_key, timeout=30.0)
+    return groq_client
+
+
+def get_google_client():
+    global google_client
+    api_key = get_api_key("GOOGLE_API_KEY")
+    if not api_key:
+        raise ValueError("GOOGLE_API_KEY is not configured.")
+    if google_client is None:
+        google_client = genai.Client(
+            api_key=api_key,
+            http_options={"timeout": 30000},
+        )
+    return google_client
 
 
 class GenerationError(Exception):
@@ -81,6 +107,7 @@ class Conversation:
     async def _send_google(
         self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
     ) -> str | None:
+        google_client = get_google_client()
         generation_config = {
             "max_output_tokens": 65536,
             "thinking_level": "minimal",
@@ -138,6 +165,7 @@ class Conversation:
     async def _send_groq(
         self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
     ) -> str | None:
+        groq_client = get_groq_client()
         self.messages.append({"role": "user", "content": message})
         groq_tools = getattr(self.mcp, "openai_tools", None)
 

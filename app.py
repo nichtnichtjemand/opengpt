@@ -5,6 +5,7 @@ import flet as ft
 
 import aiapi
 import mcp_manager
+from config import get_api_key, save_api_key
 
 
 async def main(page: ft.Page, mcp):
@@ -41,6 +42,45 @@ async def main(page: ft.Page, mcp):
 
     page.theme = custom_theme
     page.dark_theme = custom_theme
+
+    if not get_api_key("GROQ_API_KEY"):
+        key_field = ft.TextField(
+            label="Groq API Key",
+            password=True,
+            can_reveal_password=True,
+            autofocus=True,
+            width=420,
+        )
+
+        def save_key(_):
+            try:
+                save_api_key("GROQ_API_KEY", key_field.value or "")
+            except ValueError as error:
+                key_field.error_text = str(error)
+                page.update()
+                return
+
+            aiapi.reset_api_clients()
+            key_dialog.open = False
+            page.update()
+
+        key_field.on_submit = save_key
+        key_dialog = ft.AlertDialog(
+            modal=True,
+            title="Groq API Key erforderlich",
+            content=ft.Column(
+                controls=[
+                    ft.Text("Enter your Qroq API key."),
+                    key_field,
+                ],
+                tight=True,
+                spacing=12,
+            ),
+            actions=[
+                ft.TextButton(content="Save", on_click=save_key),
+            ],
+        )
+        page.show_dialog(key_dialog)
 
     conversation = aiapi.Conversation(
         mcp=mcp,

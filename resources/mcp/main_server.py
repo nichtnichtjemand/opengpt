@@ -3,6 +3,7 @@ import traceback
 
 import requests
 from mcp.server.mcpserver import MCPServer
+from tools.image_generation import image_generation
 from tools.memory import memory
 from tools.memory.memory import MStorageParseError
 from tools.skills import skillmanager
@@ -149,6 +150,12 @@ def workspace_export_folder() -> str:
         msg = f"An Error occured: {e}"
         logger.error(msg)
         return msg
+
+
+@mcp.tool()
+def generate_image(prompt: str) -> str:
+    """Creates an image with the prompt provided. Returns whether the image got generated successfully."""
+    return image_generation.generate_image(prompt)
 
 
 if __name__ == "__main__":

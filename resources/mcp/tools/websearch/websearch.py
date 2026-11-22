@@ -1,27 +1,17 @@
-import os
-import sys
-from pathlib import Path
-
-from dotenv import load_dotenv
 from tavily import BadRequestError, TavilyClient
+from config import get_api_key
 
-for candidate in (
-    Path(getattr(sys, "_MEIPASS", "")),
-    Path(__file__).resolve().parents[4],
-    Path(__file__).resolve().parent,
-    Path.cwd(),
-):
-    env_path = candidate / ".env"
-    if env_path.is_file():
-        load_dotenv(env_path)
-        break
 
-client = TavilyClient(os.getenv("TAVILY_API_KEY"))
+def get_client() -> TavilyClient:
+    api_key = get_api_key("TAVILY_API_KEY")
+    if not api_key:
+        raise BadRequestError("TAVILY_API_KEY is not configured.")
+    return TavilyClient(api_key)
 
 
 def get_search(query, timerange):
     try:
-        response = client.search(
+        response = get_client().search(
             query=query,
             include_answer="basic",
             search_depth="basic",

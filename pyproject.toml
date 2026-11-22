@@ -41,5 +41,5 @@ dev = [
 ]
 
 [tool.flet.app]
-include = ["assets", "resources", ".env"]
-exclude = ["dist", "build", ".git", ".venv", "__pycache__"]
+include = ["assets", "resources"]
+exclude = ["dist", "build", ".git", ".venv", "__pycache__", ".env", ".env.*"]
