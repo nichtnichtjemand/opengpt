@@ -44,7 +44,7 @@ async def main(page: ft.Page, mcp):
     conversation = aiapi.Conversation(
         mcp=mcp,
         provider="groq",
-        model="openai/gpt-oss-20b",
+        model="openai/gpt-oss-120b",
         # mcp=mcp,
         # provider="google",
         # model="gemini-3.5-flash-lite",
@@ -161,11 +161,33 @@ async def main(page: ft.Page, mcp):
             )
 
     def ui_tool_status(tool_name: str, args: dict):
-        args = str(args)
-        args = str(args[:30] + "..." if len(args) > 30 else args)
-        chat_history.controls.append(
-            create_message_bubble(f"Uses tool {tool_name} with {args}", type="tool")
-        )
+        if tool_name == "get_skill":
+            message = f"Reads about {args['name']}"
+        elif tool_name == "workspace_write_file":
+            message = "Writes a file"
+        elif tool_name == "workspace_run_shell":
+            message = "Runs a command"
+        elif tool_name == "workspace_export_folder":
+            message = "Exports files"
+        elif tool_name == "workspace_list_files":
+            message = "Reads all files"
+        elif tool_name == "secret":
+            message = "Reads the secret"
+        elif tool_name == "get_weather":
+            message = "Gets the weather"
+        elif tool_name == "system_status":
+            message = "Checks the system status"
+        elif tool_name == "get_memory":
+            message = "Remembers information about you"
+        elif tool_name == "add_memory_block" or tool_name == "edit_memory":
+            message = "Saves memory aout you"
+        elif tool_name == "reset_memory" or tool_name == "remove_memory_block":
+            message = "Deletes information about you"
+        elif tool_name == "search_online":
+            message = "Searches online"
+        else:
+            message = f"Runs tool {tool_name} {args}"
+        chat_history.controls.append(create_message_bubble(message, type="tool"))
         page.update()
 
     async def handle_markdown_link(e: ft.Event[ft.Markdown]):
@@ -196,6 +218,7 @@ async def main(page: ft.Page, mcp):
                     style=default_text_style,
                 )
             )
+
         finally:
             status_text.value = ""
             input_text.disabled = False
