@@ -83,12 +83,12 @@ async def main(page: ft.Page, mcp):
         page.show_dialog(key_dialog)
 
     conversation = aiapi.Conversation(
-        mcp=mcp,
-        provider="groq",
-        model="openai/gpt-oss-120b",
         # mcp=mcp,
-        # provider="google",
-        # model="gemini-3.5-flash-lite",
+        # provider="groq",
+        # model="openai/gpt-oss-120b",
+        mcp=mcp,
+        provider="google",
+        model="gemini-3.5-flash-lite",
     )
 
     chat_history = ft.ListView(
