@@ -47,6 +47,7 @@ def run_mcp_server():
     )
     mcp_root = bundle_root / "resources" / "mcp"
     sys.path.insert(0, str(mcp_root))
+    sys.path.insert(0, str(bundle_root))
     server_py = mcp_root / "main_server.py"
     server_pyc = mcp_root / "main_server.pyc"
     runpy.run_path(

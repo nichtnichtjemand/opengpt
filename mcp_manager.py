@@ -36,6 +36,18 @@ class MCPManager:
                 if script_path.is_absolute() and script_path.is_file():
                     break
         server_args = ["--mcp-server"] if bundle_mode else ["-u", str(script_path)]
+        project_root = str(
+            Path(__file__).resolve().parent
+        )
+        python_path = os.pathsep.join(
+            path
+            for path in (
+                project_root,
+                str(script_path.parent),
+                os.getenv("PYTHONPATH", ""),
+            )
+            if path
+        )
         self.server_params = StdioServerParameters(
             command=sys.executable,
             args=server_args,
@@ -43,6 +55,7 @@ class MCPManager:
                 **os.environ,
                 "PYTHONUNBUFFERED": "1",
                 "OPENGPT_MCP_SERVER": "1",
+                "PYTHONPATH": python_path,
             },
         )
         self.exit_stack = AsyncExitStack()
