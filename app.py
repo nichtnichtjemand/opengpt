@@ -395,7 +395,7 @@ async def main(page: ft.Page, mcp):
     )
     sidebar = ft.Container(
         width=260,
-        bgcolor="#eee2d8",
+        bgcolor="#e4ccb8",
         padding=14,
         content=ft.Column(
             controls=[
@@ -407,10 +407,10 @@ async def main(page: ft.Page, mcp):
                     ),
                     padding=ft.Padding.only(bottom=8),
                 ),
-                ft.Divider(color="#d5c5b9"),
+                ft.Divider(color="#ecded2"),
                 ft.Container(
                     content=ft.Text(
-                        "CONVERSATIONS",
+                        "Conversations",
                         size=11,
                         weight=ft.FontWeight.BOLD,
                         color="#8E8178",
