@@ -1,4 +1,5 @@
 import json
+import locale
 import logging
 import os
 import platform
@@ -251,6 +252,7 @@ class Conversation:
             prompt.replace("{SYSTEM:MODEL}", self.model)
             .replace("{SYSTEM:TIME}", datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
             .replace("{SYSTEM:PLATFORM}", str(platform.uname()))
+            .replace("{SYSTEM:LOCALE}", str(locale.getdefaultlocale()))
             + f"\n\nAvailable Skills: {get_skills()}"
         )
         return prompt

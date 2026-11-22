@@ -58,4 +58,4 @@ Before calling ANY tool with the workspace_ prefix, you MUST load the workspace 
 - Your model: {SYSTEM:MODEL}
 - Time and date: {SYSTEM:TIME}
 - The platform the user writes with you: {SYSTEM:PLATFORM}
-- System Language: {SYSTEM:LOCALE}
+- System Language (Write in this language with the user if not stated otherwise): {SYSTEM:LOCALE}
