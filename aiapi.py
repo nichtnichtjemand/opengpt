@@ -3,18 +3,21 @@ import logging
 import os
 import platform
 import sys
+import uuid
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
+import json_repair
 from dotenv import load_dotenv
 from google import genai
-from groq import AsyncGroq
+from groq import AsyncGroq, BadRequestError
 
 from mcp_manager import MCPManager
 from resources.mcp.tools.skills.skillmanager import get_skills
 
 logger = logging.getLogger("opengpt." + __name__)
+
 
 def bundle_root() -> Path:
     candidates = [
@@ -135,26 +138,25 @@ class Conversation:
         self, message: str, on_tool_call: Callable[[str, dict], None] | None = None
     ) -> str | None:
         self.messages.append({"role": "user", "content": message})
-
         groq_tools = getattr(self.mcp, "openai_tools", None)
 
-        try:
-            while True:
-                kwargs = {
-                    "model": self.model,
-                    "messages": self.messages,
-                    "temperature": 1.0,
-                    "max_completion_tokens": 4096,
-                    "top_p": 1.0,
-                    "stream": False,
-                }
+        while True:
+            kwargs = {
+                "model": self.model,
+                "messages": self.messages,
+                "temperature": 0.3,
+                "max_completion_tokens": 4096,
+                "top_p": 1.0,
+                "stream": False,
+            }
 
-                if "gpt-oss" in self.model or "qwen3" in self.model:
-                    kwargs["reasoning_effort"] = "medium"
+            if "gpt-oss" in self.model or "qwen3" in self.model:
+                kwargs["reasoning_effort"] = "medium"
 
-                if groq_tools:
-                    kwargs["tools"] = groq_tools
+            if groq_tools:
+                kwargs["tools"] = groq_tools
 
+            try:
                 completion = await groq_client.chat.completions.create(**kwargs)
                 response_message = completion.choices[0].message
 
@@ -170,28 +172,72 @@ class Conversation:
 
                 if not response_message.tool_calls:
                     return response_message.content or ""
+                calls_to_run = [
+                    (
+                        tc.id,
+                        tc.function.name,
+                        json.loads(tc.function.arguments or "{}"),
+                    )
+                    for tc in response_message.tool_calls
+                ]
 
-                for tool_call in response_message.tool_calls:
-                    func_name = tool_call.function.name
-                    func_args = json.loads(tool_call.function.arguments or "{}")
+            except BadRequestError as e:
+                logger.error(f"Error in Groq chat.completions.create: {e}")
+                error_info = e.body.get("error", {}) if isinstance(e.body, dict) else {}
 
-                    if on_tool_call:
-                        on_tool_call(func_name, func_args)
+                if error_info.get("code") == "tool_use_failed":
+                    failed_raw = error_info.get("failed_generation", "")
+                    repaired = json_repair.loads(failed_raw)
 
-                    result_text = await self.mcp.execute_tool(func_name, func_args)
+                    if (
+                        not isinstance(repaired, dict)
+                        or "name" not in repaired
+                        or "arguments" not in repaired
+                    ):
+                        raise e  # noqa: TRY201
+
+                    func_name = repaired["name"]
+                    func_args = repaired["arguments"]
+                    if isinstance(func_args, str):
+                        func_args = json_repair.loads(func_args)
+
+                    fake_call_id = f"call_repaired_{uuid.uuid4().hex[:8]}"
 
                     self.messages.append(
                         {
-                            "role": "tool",
-                            "tool_call_id": tool_call.id,
-                            "name": func_name,
-                            "content": str(result_text),
+                            "role": "assistant",
+                            "content": "",
+                            "tool_calls": [
+                                {
+                                    "id": fake_call_id,
+                                    "type": "function",
+                                    "function": {
+                                        "name": func_name,
+                                        "arguments": json.dumps(func_args),
+                                    },
+                                }
+                            ],
                         }
                     )
 
-        except Exception as e:  # noqa: BLE001
-            logger.error(f"Error in Groq chat.completions.create: {e}")
-            return None
+                    calls_to_run = [(fake_call_id, func_name, func_args)]
+                else:
+                    raise e
+
+            for call_id, func_name, func_args in calls_to_run:
+                if on_tool_call:
+                    on_tool_call(func_name, func_args)
+
+                result_text = await self.mcp.execute_tool(func_name, func_args)
+
+                self.messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": call_id,
+                        "name": func_name,
+                        "content": str(result_text),
+                    }
+                )
 
     def get_system_prompt(self):
         prompt_path = bundle_root() / "resources" / "prompts" / "systemprompt1.txt"
