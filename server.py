@@ -638,6 +638,7 @@ fetch("/api/health")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global mcp, conversation
+    aiapi.prompt_for_api_keys()
     logger.info("Connecting to MCP server...")
     mcp = mcp_manager.MCPManager(MCP_SERVER)
     await mcp.connect()

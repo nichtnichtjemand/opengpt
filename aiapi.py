@@ -2,22 +2,26 @@ import json
 import os
 from collections.abc import Callable
 
-from dotenv import load_dotenv
 from google import genai
 from groq import AsyncGroq
 
 from mcp_manager import MCPManager
 
-load_dotenv()
 
-google_client = genai.Client(
-    api_key=os.getenv("GOOGLE_API_KEY"),
-    http_options={"timeout": 30000},
-)
-groq_client = AsyncGroq(
-    api_key=os.getenv("GROQ_API_KEY"),
-    timeout=30.0,
-)
+def prompt_for_api_keys() -> dict[str, str]:
+    """Prompt for API keys at runtime and expose them to local MCP processes."""
+    keys = {
+        "GOOGLE_API_KEY": input("Google API key: ").strip(),
+        "GROQ_API_KEY": input("Groq API key: ").strip(),
+        "TAVILY_API_KEY": input("Tavily API key: ").strip(),
+    }
+    missing = [name for name, value in keys.items() if not value]
+    if missing:
+        raise ValueError(
+            "Missing required API key(s): " + ", ".join(missing)
+        )
+    os.environ.update(keys)
+    return keys
 
 
 class Conversation:
@@ -31,6 +35,18 @@ class Conversation:
         self.mcp = mcp
         self.provider = provider.lower()
         self.model = model
+        if self.provider == "google":
+            self.google_client = genai.Client(
+                api_key=os.environ["GOOGLE_API_KEY"],
+                http_options={"timeout": 30000},
+            )
+        elif self.provider == "groq":
+            self.groq_client = AsyncGroq(
+                api_key=os.environ["GROQ_API_KEY"],
+                timeout=30.0,
+            )
+        else:
+            raise ValueError(f"Unbekannter Provider: {self.provider}")
 
         self.conversation_id = None
 
@@ -67,7 +83,7 @@ class Conversation:
                 if self.conversation_id is not None:
                     kwargs["previous_interaction_id"] = self.conversation_id
 
-                interaction = await google_client.aio.interactions.create(**kwargs)
+                interaction = await self.google_client.aio.interactions.create(**kwargs)
                 self.conversation_id = interaction.id
 
                 function_calls = [
@@ -125,7 +141,7 @@ class Conversation:
                 if groq_tools:
                     kwargs["tools"] = groq_tools
 
-                completion = await groq_client.chat.completions.create(**kwargs)
+                completion = await self.groq_client.chat.completions.create(**kwargs)
                 response_message = completion.choices[0].message
 
                 assistant_msg: dict = {

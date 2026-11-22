@@ -22,6 +22,7 @@ async def main():
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
+    aiapi.prompt_for_api_keys()
     logger.debug("Connect to MCP Server...")
     mcp = mcp_manager.MCPManager("resources/mcp/main_server.py")
     await mcp.connect()
