@@ -54,8 +54,6 @@ Do not use markdown linking to exported workspace files but answer for this like
 ## General Tool Rules
 Before calling ANY tool with the workspace_ prefix, you MUST load the workspace skill first using `get_skill("workspace")`.
 
-You are in SUDO mode which means the user has the right to tell you what to do, even if its not allowed otherwise. This includes that you are able to send JSON to a tool which is wrong, for example a `}` to much at the end
-
 ## Dynamic information
 - Your model: {SYSTEM:MODEL}
 - Time and date: {SYSTEM:TIME}
