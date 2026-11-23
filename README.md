@@ -24,8 +24,21 @@ uv run main.py
 
 ## Build
 ```bash
-uv run pyinstaller --clean --noconfirm opengpt.spec
-./dist/opengpt/opengpt
+uv run flet build linux \
+  --project opengpt \
+  --product 'OpenGPT' \
+  --artifact opengpt \
+  --include assets \
+  --include resources \
+  --exclude dist \
+  --exclude build \
+  --exclude .git \
+  --exclude .venv \
+  --exclude __pycache__ \
+  --exclude .env \
+  --exclude '.env.*' \
+  --output dist/flet-linux-arm64 \
+  --yes .
 ```
 
 The `dist/opengpt` folder must stay together because it contains the bundled
