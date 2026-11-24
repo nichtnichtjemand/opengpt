@@ -283,6 +283,8 @@ class Conversation:
 
                 tool_results = []
                 for call in function_calls:
+                    if "end_chat" in call.name:
+                        raise KeyboardInterrupt()
                     if on_tool_call:
                         on_tool_call(call.name, call.arguments or {})
 
@@ -344,6 +346,11 @@ class Conversation:
 
                 if not response_message.tool_calls:
                     return response_message.content or ""
+
+                for tc in response_message.tool_calls:
+                    if "end_chat" in tc.function.name:
+                        raise KeyboardInterrupt("")
+
                 calls_to_run = [
                     (
                         tc.id,

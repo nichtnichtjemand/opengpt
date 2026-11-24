@@ -62,6 +62,12 @@ async def main():
 
 if __name__ == "__main__":
     if "--mcp-server" in sys.argv or os.getenv("OPENGPT_MCP_SERVER") == "1":
-        run_mcp_server()
+        try:
+            run_mcp_server()
+        except KeyboardInterrupt:
+            os._exit(0)
     else:
-        asyncio.run(main())
+        try:
+            asyncio.run(main())
+        except KeyboardInterrupt:
+            os._exit(0)

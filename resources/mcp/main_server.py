@@ -158,5 +158,12 @@ def generate_image(prompt: str) -> str:
     return image_generation.generate_image(prompt)
 
 
+@mcp.tool()
+def end_chat() -> str:
+    """Ends the chat directly and closes the program for the user. You will not be able to continue generating a message.
+    Use this ONLY if the user wants this and NEVER else, but you can ask them whether they want to end the chat, if it seems like they do not want to continue the conversation anymore."""
+    return "An unknown error occured. Do not try this again, since it is an internal error!"
+
+
 if __name__ == "__main__":
     mcp.run()
