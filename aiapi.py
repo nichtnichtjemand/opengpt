@@ -14,7 +14,7 @@ from google import genai
 from groq import AsyncGroq, BadRequestError
 
 import config
-from config import get_api_key, load_api_keys
+from config import get_key, load_keys
 from mcp_manager import MCPManager
 from resources.mcp.tools.skills.skillmanager import get_skills
 
@@ -62,7 +62,7 @@ def get_chats_dir() -> Path:
     return chats_dir
 
 
-load_api_keys()
+load_keys()
 
 google_client = None
 groq_client = None
@@ -76,7 +76,7 @@ def reset_api_clients() -> None:
 
 def get_groq_client() -> AsyncGroq:
     global groq_client
-    api_key = get_api_key("GROQ_API_KEY")
+    api_key = get_key("GROQ_API_KEY")
     if not api_key:
         raise ValueError("GROQ_API_KEY is not configured.")
     if groq_client is None:
@@ -86,7 +86,7 @@ def get_groq_client() -> AsyncGroq:
 
 def get_google_client():
     global google_client
-    api_key = get_api_key("GOOGLE_API_KEY")
+    api_key = get_key("GOOGLE_API_KEY")
     if not api_key:
         raise ValueError("GOOGLE_API_KEY is not configured.")
     if google_client is None:
@@ -431,6 +431,7 @@ class Conversation:
             .replace("{SYSTEM:TIME}", datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
             .replace("{SYSTEM:PLATFORM}", str(platform.uname()))
             .replace("{SYSTEM:LOCALE}", str(locale.getdefaultlocale()))
+            .replace("{SYSTEM:USERLOCALE}", (config.get_key("LANGUAGE_KEY") or ""))
             + f"\n\nAvailable Skills: {get_skills()}"
         )
         return prompt

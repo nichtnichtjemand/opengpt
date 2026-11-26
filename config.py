@@ -13,7 +13,7 @@ def get_env_path() -> Path:
     return get_config_dir() / ".env"
 
 
-def load_api_keys() -> None:
+def load_keys() -> None:
     local_env = Path(__file__).resolve().parent / ".env"
     if not local_env.is_file():
         local_env = Path.cwd() / ".env"
@@ -26,15 +26,15 @@ def load_api_keys() -> None:
         load_dotenv(env_path, override=False)
 
 
-def get_api_key(name: str) -> str:
-    load_api_keys()
+def get_key(name: str) -> str:
+    load_keys()
     return (os.getenv(name) or "").strip()
 
 
-def save_api_key(name: str, value: str) -> None:
+def save_key(name: str, value: str) -> None:
     value = value.strip()
     if not value:
-        raise ValueError("API key cannot be empty.")
+        raise ValueError("Key cannot be empty.")
 
     config_dir = get_config_dir()
     config_dir.mkdir(parents=True, exist_ok=True)
