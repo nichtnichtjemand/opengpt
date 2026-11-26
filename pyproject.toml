@@ -18,7 +18,6 @@ dependencies = [
     "pdf2image>=1.17.0",
     "pdfplumber>=0.11.10",
     "pillow>=13.0.0",
-    "pypdf>=7.1.0",
     "python-dotenv>=1.2.4",
     "restrictedpython>=9.0",
     "rich>=15.0.0",
