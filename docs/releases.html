@@ -8,35 +8,106 @@
     <title>OpenGPT - Releases</title>
     <link rel="icon" href="icon.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
+    </head>
 
     <body>
-        <header class="navbar">
-            <div class="logo">OpenGPT</div>
-            <nav>
-                <a href="index.html">Start</a>
-                <a href="https://github.com/nichtnichtjemand/opengpt">Source Code</a>
 
-            </nav>
-        </header>
+        <div class="container">
+            <header>
+                <h1>Downloads</h1>
+            </header>
 
-        <main>
-            <section class="hero">
-                <h1>Releases</h1>
-                <a href="https://github.com/nichtnichtjemand/opengpt/releases" class="btn">View on GitHub</a>
+            <div id="releases-container">
+                <div class="loading">Loading Releases from GitHub...</div>
+            </div>
+        </div>
 
-            </section>
+        <script>
 
-        </main>
+            const container = document.getElementById('releases-container');
 
-        <footer id="footer">
-            <p>&copy; 2026 OpenGPT</p>
-            <p>Made with ❤️ by nichtnichtjemand</p>
-        </footer>
+            function formatBytes(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+            }
+
+            async function fetchReleases() {
+                try {
+                    const response = await fetch(`https://api.github.com/repos/nichtnichtjemand/opengpt/releases`);
+                    if (!response.ok) throw new Error('An error occured.');
+
+                    const releases = await response.json();
+                    container.innerHTML = '';
+
+                    if (releases.length === 0) {
+                        container.innerHTML = '<div class="loading">No releases found!</div>';
+                        return;
+                    }
+
+                    releases.forEach((release, index) => {
+
+                        const date = new Date(release.published_at).toLocaleDateString('de-DE', {
+                            year: 'numeric', month: 'long', day: 'numeric'
+                        });
+
+                        let assetsHTML = '';
+
+                        release.assets.forEach(asset => {
+                            assetsHTML += `
+            <a href="${asset.browser_download_url}" class="asset-btn" download>
+              <div class="asset-info">
+                <span class="asset-name" title="${asset.name}">${asset.name}</span>
+                <span class="asset-meta">${formatBytes(asset.size)} • ${asset.download_count} Downloads</span>
+              </div>
+              <span>↓</span>
+            </a>
+          `;
+                        });
+
+                        assetsHTML += `
+          <a href="${release.zipball_url}" class="asset-btn">
+            <div class="asset-info">
+              <span class="asset-name">Source Code (ZIP)</span>
+              <span class="asset-meta">Source Code (Archive)</span>
+            </div>
+            <span>↓</span>
+          </a>
+        `;
+
+                        const card = document.createElement('div');
+                        card.className = 'release-card';
+                        card.innerHTML = `
+                            <div class="release-header">
+                                <div class="release-title">
+                                <h2>${release.name || release.tag_name}</h2>
+                                <span class="tag">${release.tag_name}</span>
+                                ${index === 0 ? '<span class="badge-latest">Latest</span>' : ''}
+                                </div>
+                                <span class="release-date">Released at ${date}</span>
+                            </div>
+                            <div class="assets-grid">
+                                ${assetsHTML}
+                            </div>
+                            `;
+
+                        container.appendChild(card);
+                    });
+
+                } catch (error) {
+                    container.innerHTML = `<div class="error">Error while loding: ${error.message}</div>`;
+                }
+            }
+
+            fetchReleases();
+        </script>
+
     </body>
-
-</body>
 
 </html>
