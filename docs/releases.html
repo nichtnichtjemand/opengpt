@@ -8,120 +8,105 @@
     <title>OpenGPT - Releases</title>
     <link rel="icon" href="icon.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
-
-
 </head>
 
 <body>
-    </head>
+    <div class="container">
+        <header>
+            <h1>Downloads</h1>
+        </header>
 
-    <body>
-
-        <div class="container">
-            <header>
-                <h1>Downloads</h1>
-            </header>
-
-            <div id="releases-container">
-                <div class="loading">Loading Releases from GitHub...</div>
-            </div>
+        <div id="releases-container">
+            <div class="loading">Loading Releases from GitHub...</div>
         </div>
+    </div>
 
-        <script>
+    <footer id="footer">
+        <p>&copy; 2026 OpenGPT</p>
+        <p>Made with ❤️ by nichtnichtjemand</p>
+    </footer>
 
-            const container = document.getElementById('releases-container');
+    <script>
+        const container = document.getElementById('releases-container');
+        const downloadIcon = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                <!--!Font Awesome Free v7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.-->
+                <path d="M320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64zM308.7 451.3L204.7 347.3C200.1 342.7 198.8 335.8 201.2 329.9C203.6 324 209.5 320 216 320L272 320L272 224C272 206.3 286.3 192 304 192L336 192C353.7 192 368 206.3 368 224L368 320L424 320C430.5 320 436.3 323.9 438.8 329.9C441.3 335.9 439.9 342.8 435.3 347.3L331.3 451.3C325.1 457.5 314.9 457.5 308.7 451.3z" />
+            </svg>`;
 
-            function formatBytes(bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-            }
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
 
-            async function fetchReleases() {
-                try {
-                    const response = await fetch(`https://api.github.com/repos/nichtnichtjemand/opengpt/releases`);
-                    if (!response.ok) throw new Error('An error occured.');
+        async function fetchReleases() {
+            try {
+                const response = await fetch('https://api.github.com/repos/nichtnichtjemand/opengpt/releases');
+                if (!response.ok) throw new Error('An error occurred.');
 
-                    const releases = await response.json();
-                    container.innerHTML = '';
+                const releases = await response.json();
+                container.innerHTML = '';
 
-                    if (releases.length === 0) {
-                        container.innerHTML = '<div class="loading">No releases found!</div>';
-                        return;
-                    }
+                if (releases.length === 0) {
+                    container.innerHTML = '<div class="loading">No releases found!</div>';
+                    return;
+                }
 
-                    releases.forEach((release, index) => {
+                releases.forEach((release, index) => {
+                    const date = new Date(release.published_at).toLocaleDateString('de-DE', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    });
 
-                        const date = new Date(release.published_at).toLocaleDateString('de-DE', {
-                            year: 'numeric', month: 'long', day: 'numeric'
-                        });
+                    let assetsHTML = '';
 
-                        let assetsHTML = '';
-
-                        release.assets.forEach(asset => {
-                            assetsHTML += `
-            <a href="${asset.browser_download_url}" class="asset-btn" download>
-              <div class="asset-info">
-                <span class="asset-name" title="${asset.name}">${asset.name}</span>
-                <span class="asset-meta">${formatBytes(asset.size)} • ${asset.download_count} Downloads</span>
-              </div>
-                  <svg xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.-->
-        <path
-            d="M320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64zM308.7 451.3L204.7 347.3C200.1 342.7 198.8 335.8 201.2 329.9C203.6 324 209.5 320 216 320L272 320L272 224C272 206.3 286.3 192 304 192L336 192C353.7 192 368 206.3 368 224L368 320L424 320C430.5 320 436.3 323.9 438.8 329.9C441.3 335.9 439.9 342.8 435.3 347.3L331.3 451.3C325.1 457.5 314.9 457.5 308.7 451.3z" />
-    </svg>
-            </a>
-          `;
-                        });
-
+                    release.assets.forEach(asset => {
                         assetsHTML += `
-          <a href="${release.zipball_url}" class="asset-btn">
-            <div class="asset-info">
-              <span class="asset-name">Source Code (ZIP)</span>
-              <span class="asset-meta">Source Code</span>
-            </div>
-                <svg xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.-->
-        <path
-            d="M320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64zM308.7 451.3L204.7 347.3C200.1 342.7 198.8 335.8 201.2 329.9C203.6 324 209.5 320 216 320L272 320L272 224C272 206.3 286.3 192 304 192L336 192C353.7 192 368 206.3 368 224L368 320L424 320C430.5 320 436.3 323.9 438.8 329.9C441.3 335.9 439.9 342.8 435.3 347.3L331.3 451.3C325.1 457.5 314.9 457.5 308.7 451.3z" />
-    </svg>
-          </a>
-        `;
+                            <a href="${asset.browser_download_url}" class="asset-btn" download>
+                                <div class="asset-info">
+                                    <span class="asset-name" title="${asset.name}">${asset.name}</span>
+                                    <span class="asset-meta">${formatBytes(asset.size)} • ${asset.download_count} Downloads</span>
+                                </div>
+                                ${downloadIcon}
+                            </a>`;
+                    });
 
-                        const card = document.createElement('div');
-                        card.className = 'release-card';
-                        card.innerHTML = `
-                            <div class="release-header">
-                                <div class="release-title">
+                    assetsHTML += `
+                        <a href="${release.zipball_url}" class="asset-btn">
+                            <div class="asset-info">
+                                <span class="asset-name">Source Code (ZIP)</span>
+                                <span class="asset-meta">Source Code</span>
+                            </div>
+                            ${downloadIcon}
+                        </a>`;
+
+                    const card = document.createElement('div');
+                    card.className = 'release-card';
+                    card.innerHTML = `
+                        <div class="release-header">
+                            <div class="release-title">
                                 <h2>${release.name || release.tag_name}</h2>
                                 <span class="tag">${release.tag_name}</span>
                                 ${index === 0 ? '<span class="badge-latest">Latest</span>' : ''}
-                                </div>
-                                <span class="release-date">Released at ${date}</span>
                             </div>
-                            <div class="assets-grid">
-                                ${assetsHTML}
-                            </div>
-                            `;
+                            <span class="release-date">Released at ${date}</span>
+                        </div>
+                        <div class="assets-grid">
+                            ${assetsHTML}
+                        </div>`;
 
-                        container.appendChild(card);
-                    });
+                    container.appendChild(card);
+                });
 
-                } catch (error) {
-                    container.innerHTML = `<div class="error">Error while loding: ${error.message}</div>`;
-                }
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error while loading: ${error.message}</div>`;
             }
+        }
 
-            fetchReleases();
-        </script>
-
-        <footer id="footer">
-            <p>&copy; 2026 OpenGPT</p>
-            <p>Made with ❤️ by nichtnichtjemand</p>
-        </footer>
-
-    </body>
+        fetchReleases();
+    </script>
+</body>
 
 </html>
