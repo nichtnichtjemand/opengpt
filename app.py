@@ -395,7 +395,7 @@ async def main(page: ft.Page, mcp):
         padding=ft.Padding.only(left=20, right=8, top=6, bottom=6),
         content=ft.Row(
             controls=[input_text, send_button],
-            vertical_alignment=ft.CrossAxisAlignment.END,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
         ),
     )
 
