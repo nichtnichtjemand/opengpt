@@ -361,6 +361,64 @@ async def main(page: ft.Page, mcp):
 
         page.update()
 
+    def open_settings():
+        groq_key_field = ft.TextField(
+            label="Groq API Key",
+            password=True,
+            can_reveal_password=True,
+            value=get_api_key("GROQ_API_KEY") or "",
+            width=400,
+        )
+
+        google_key_field = ft.TextField(
+            label="Google API Key",
+            password=True,
+            can_reveal_password=True,
+            value=get_api_key("GOOGLE_API_KEY") or "",
+            width=400,
+        )
+
+        def save_settings(e):
+            try:
+                save_api_key("GROQ_API_KEY", groq_key_field.value or "")
+                save_api_key("GOOGLE_API_KEY", google_key_field.value or "")
+
+                aiapi.reset_api_clients()
+
+                page.pop_dialog()
+                page.update()
+
+            except ValueError as error:
+                status_text.value = str(error)
+                page.update()
+
+        settings_dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Settings"),
+            content=ft.Column(
+                controls=[
+                    ft.Text("API Keys", weight=ft.FontWeight.BOLD),
+                    groq_key_field,
+                    google_key_field,
+                ],
+                tight=True,
+                spacing=15,
+                width=400,
+            ),
+            actions=[
+                ft.TextButton(
+                    "Cancel",
+                    on_click=lambda e: page.pop_dialog(),
+                ),
+                ft.TextButton(
+                    "Save",
+                    on_click=save_settings,
+                ),
+            ],
+        )
+
+        page.show_dialog(settings_dialog)
+
     input_text = ft.TextField(
         hint_text="Message to OpenGPT...",
         hint_style=ft.TextStyle(
@@ -425,6 +483,11 @@ async def main(page: ft.Page, mcp):
                         expand=True,
                     ),
                     padding=ft.Padding.only(bottom=8),
+                ),
+                ft.TextButton(
+                    "Settings",
+                    icon=ft.Icons.SETTINGS_OUTLINED,
+                    on_click=lambda e: open_settings(),
                 ),
                 ft.Divider(color="#ecded2"),
                 ft.Container(
