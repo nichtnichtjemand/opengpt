@@ -13,6 +13,9 @@ jobs:
   build:
     name: Build (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
+    env:
+      ARCHIVE_NAME: opengpt-${{ matrix.name }}-${{ github.ref_name }}.${{ matrix.ext }}
+
     strategy:
       fail-fast: false
       matrix:
