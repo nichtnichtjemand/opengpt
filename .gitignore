@@ -13,3 +13,6 @@ wheels/
 # Resources
 resources/mcp/tools/memory/memory.mstorage
 resources/exported/**
+
+# Temporary files
+tmp/
