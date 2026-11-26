@@ -218,3 +218,14 @@ header p {
     color: #b91c1c;
     border: 1px solid rgba(185, 28, 28, 0.3);
 }
+
+.asset-btn .download-icon,
+.asset-btn svg {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px;
+    max-width: 28px;
+    color: var(--accent-color);
+    margin-left: 0.75rem;
+    flex-shrink: 0;
+}
